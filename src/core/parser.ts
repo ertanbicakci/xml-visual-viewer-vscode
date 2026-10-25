@@ -17,6 +17,12 @@ import {
   type XmlAttribute,
   type XmlIssue,
 } from "./model";
+import { fingerprint } from "./fingerprint";
+import {
+  encodeModel,
+  hydrateModel,
+  transferBytes,
+} from "../shared/model-codec";
 
 const XML = "http://www.w3.org/XML/1998/namespace";
 const XMLNS = "http://www.w3.org/2000/xmlns/";
@@ -42,6 +48,7 @@ class ModelError extends Error {
 function preflight(source: string, limits: ParseLimits): void {
   let depth = 0,
     elements = 1,
+    attributeCount = 0,
     cursor = 0;
   while (cursor < source.length) {
     const start = source.indexOf("<", cursor);
@@ -69,6 +76,12 @@ function preflight(source: string, limits: ParseLimits): void {
       if (quote) {
         if (char === quote) quote = "";
       } else if (char === '"' || char === "'") quote = char;
+      else if (char === "=" && ++attributeCount > limits.maxAttributes)
+        throw new ModelError(
+          "limit",
+          `XML exceeds the ${limits.maxAttributes} attribute limit.`,
+          end,
+        );
       else if (char === ">") break;
     }
     if (source[start + 1] === "/") depth--;
@@ -191,6 +204,26 @@ export function parseXmlDocument(
       preserveDocumentType: true,
     });
     const nodes: Record<string, XmlNode> = Object.create(null);
+    const namespaceKeys = new Map<string, string>();
+    const nameKeys = new Map<string, Map<string, string>>();
+    const nameKey = (uri: string, local: string) => {
+      let names = nameKeys.get(uri);
+      if (!names) {
+        names = new Map();
+        nameKeys.set(uri, names);
+      }
+      let namespaceKey = namespaceKeys.get(uri);
+      if (!namespaceKey) {
+        namespaceKey = fingerprint([uri]);
+        namespaceKeys.set(uri, namespaceKey);
+      }
+      let key = names.get(local);
+      if (!key) {
+        key = fingerprint([namespaceKey, local]);
+        names.set(local, key);
+      }
+      return key;
+    };
     const model: XmlModel = {
       uri,
       version,
@@ -208,7 +241,7 @@ export function parseXmlDocument(
     const visit = (
       raw: ParsedNode,
       parentId: string | null,
-      path: string,
+      siblingIndex: number,
       depth: number,
       inherited: Record<string, string>,
       preserveSpace: boolean,
@@ -232,7 +265,10 @@ export function parseXmlDocument(
       const node: XmlNode = {
         id,
         parentId,
-        path,
+        siblingIndex,
+        path: "",
+        fingerprint: "",
+        nameKey: "",
         depth,
         kind: raw.type as XmlNode["kind"],
         name,
@@ -282,18 +318,19 @@ export function parseXmlDocument(
           node,
           qname(raw.name, scope, false, node.nameRange.start),
         );
-        const expanded = new Set<string>();
+        const expanded = new Map<string, Set<string>>();
         for (const attr of node.attributes) {
           if (attr.namespaceUri === XMLNS) continue;
           Object.assign(attr, qname(attr.name, scope, true, attr.range.start));
-          const key = `${attr.namespaceUri}\0${attr.localName}`;
-          if (expanded.has(key))
+          const names = expanded.get(attr.namespaceUri) ?? new Set<string>();
+          if (names.has(attr.localName))
             throw new ModelError(
               "namespace",
               `Duplicate attribute in the same namespace: ${attr.name}`,
               attr.range.start,
             );
-          expanded.add(key);
+          names.add(attr.localName);
+          expanded.set(attr.namespaceUri, names);
         }
         const space = raw.attributes["xml:space"];
         node.preserveSpace =
@@ -324,15 +361,32 @@ export function parseXmlDocument(
             child instanceof XmlElement ? child.name : `#${child.type}`;
           const index = (counts.get(segment) ?? 0) + 1;
           counts.set(segment, index);
-          const childPath = `${path === "/" ? "" : path}/${segment}[${index}]`;
           node.children.push(
-            visit(child, id, childPath, depth + 1, scope, node.preserveSpace),
+            visit(child, id, index, depth + 1, scope, node.preserveSpace),
           );
         }
       }
+      node.nameKey = nameKey(node.namespaceUri, node.localName);
+      node.fingerprint = fingerprint([
+        node.kind,
+        node.nameKey,
+        node.value,
+        ...node.attributes.flatMap((attr) => [
+          nameKey(attr.namespaceUri, attr.localName),
+          attr.value,
+        ]),
+        ...node.children.map((child) => nodes[child]!.fingerprint),
+      ]);
       return id;
     };
-    visit(parsed, null, "/", 0, { xml: XML }, false);
+    visit(parsed, null, 1, 0, { xml: XML }, false);
+    hydrateModel(model);
+    if (transferBytes(encodeModel(model)) > limits.maxModelBytes)
+      throw new ModelError(
+        "limit",
+        "The derived XML model exceeds its transfer budget. Try a smaller document.",
+        0,
+      );
     return { ok: true, model };
   } catch (error) {
     const known = error instanceof ModelError;
@@ -348,10 +402,14 @@ export function parseXmlDocument(
     return {
       ok: false,
       error: {
-        code: known ? error.code : "syntax",
+        code: known
+          ? error.code
+          : error instanceof XmlError
+            ? "syntax"
+            : "internal",
         message:
           error instanceof Error
-            ? error.message.split("\n")[0]!
+            ? error.message.split("\n", 1)[0]!.slice(0, 4096)
             : "Unable to parse XML.",
         offset,
         line: before.length,

@@ -1,9 +1,10 @@
+import { DEFAULT_SETTINGS, normalizeSettings } from "../shared/settings";
+import { encodeModel } from "../shared/model-codec";
 import { createRoot } from "react-dom/client";
 import { App } from "../webview/App";
 import { parseXmlDocument } from "../core/parser";
-import { searchModel, previewValue } from "../core/graph";
+import { searchWithContext, previewValue } from "../core/graph";
 import {
-  snapshotModel,
   type Bridge,
   type HostMessage,
   type ViewState,
@@ -14,12 +15,14 @@ let model: XmlModel | undefined,
   source = "",
   version = 0,
   state: ViewState = {};
+let paused = false;
 const listeners = new Set<(message: HostMessage) => void>();
 const emit = (message: HostMessage) =>
   listeners.forEach((listener) => listener(message));
 async function update(text?: string) {
   source = text ?? (await fetch("/examples/catalog.xml").then((r) => r.text()));
   version++;
+  if (paused) return;
   emit({ type: "loading", version });
   const parsed = parseXmlDocument(
     source,
@@ -28,16 +31,41 @@ async function update(text?: string) {
   );
   if (parsed.ok) {
     model = parsed.model;
-    emit({ type: "model", model: snapshotModel(model) });
+    emit({ type: "model", model: encodeModel(model, true) });
   } else emit({ type: "error", version, error: parsed.error });
 }
 const bridge: Bridge = {
   post(message) {
     if (message.type === "ready") {
+      emit({ type: "settings", settings: DEFAULT_SETTINGS });
       void update();
       return;
     }
-    if (message.type === "cancel") return;
+    if (message.type === "cancel") {
+      paused = true;
+      emit({
+        type: "error",
+        version,
+        error: {
+          code: "cancelled",
+          message:
+            "This preview is paused. Choose Retry to read the latest document.",
+          offset: 0,
+          line: 1,
+          column: 1,
+        },
+      });
+      return;
+    }
+    if (message.type === "retry") {
+      paused = false;
+      void update(source);
+      return;
+    }
+    if (message.type === "showError") {
+      document.documentElement.dataset.errorRevealed = String(version);
+      return;
+    }
     if (!model || message.version !== version) return;
     if (message.type === "search")
       emit({
@@ -45,7 +73,7 @@ const bridge: Bridge = {
         version,
         query: message.query,
         requestId: message.requestId,
-        ids: searchModel(model, message.query),
+        ...searchWithContext(model, message.query),
       });
     if (message.type === "details") {
       const node = model.nodes[message.nodeId];
@@ -85,6 +113,13 @@ const bridge: Bridge = {
 Object.assign(window, {
   xmlViewerDemo: {
     update,
+    configure(value: Record<string, unknown>) {
+      emit({
+        type: "settings",
+        settings: normalizeSettings(value),
+        changed: true,
+      });
+    },
     select(offset: number) {
       void import("../core/graph").then(({ nodeAtOffset }) => {
         if (model) {

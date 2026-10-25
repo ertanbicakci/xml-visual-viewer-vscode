@@ -4,6 +4,9 @@ export function activate(context: vscode.ExtensionContext): void {
   const provider = new XmlPreviewProvider(context);
   context.subscriptions.push(
     provider,
+    vscode.commands.registerCommand("xmlViewer.copyDiagnostics", () =>
+      provider.copyDiagnostics(),
+    ),
     vscode.window.registerCustomEditorProvider(
       XmlPreviewProvider.viewType,
       provider,

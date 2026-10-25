@@ -4,6 +4,7 @@ import type { XmlNode } from "../core/model";
 import type { Details } from "./useViewer";
 export function Inspector({
   node,
+  path,
   details,
   bridge,
   enabled,
@@ -11,6 +12,7 @@ export function Inspector({
   onFocus,
 }: {
   node: XmlNode;
+  path: string;
   details?: Details;
   bridge: Bridge;
   enabled: boolean;
@@ -34,15 +36,15 @@ export function Inspector({
       </div>
       <div className="inspector-content">
         <span className="eyebrow">{selected.kind}</span>
-        <h2>{selected.name}</h2>
+        <h2>{selected.name.slice(0, 4096)}</h2>
         <div className="path-line">
-          <code>{selected.path}</code>
+          <code>{path.length > 4096 ? path.slice(0, 4095) + "…" : path}</code>
           <button
             className="quiet"
             aria-label="Copy node path"
             onClick={() => {
               void navigator.clipboard
-                .writeText(selected.path)
+                .writeText(path)
                 .then(() => {
                   setCopied(true);
                   setTimeout(() => setCopied(false), 1400);
@@ -67,21 +69,23 @@ export function Inspector({
           >
             Show in source
           </button>
-          <button onClick={onFocus}>Focus branch</button>
+          <button disabled={!enabled} onClick={onFocus}>
+            Focus branch
+          </button>
         </div>
         <dl className="metadata">
           <div>
             <dt>Namespace</dt>
-            <dd>{selected.namespaceUri || "No namespace"}</dd>
+            <dd>{selected.namespaceUri.slice(0, 4096) || "No namespace"}</dd>
           </div>
           <div>
             <dt>Local name</dt>
-            <dd>{selected.localName}</dd>
+            <dd>{selected.localName.slice(0, 4096)}</dd>
           </div>
           {selected.prefix && (
             <div>
               <dt>Prefix</dt>
-              <dd>{selected.prefix}</dd>
+              <dd>{selected.prefix.slice(0, 4096)}</dd>
             </div>
           )}
           {full && (
@@ -96,13 +100,19 @@ export function Inspector({
         {selected.attributes.length > 0 && (
           <section>
             <h3>
-              Attributes <span>{selected.attributes.length}</span>
+              Attributes{" "}
+              <span>{full?.attributeCount ?? selected.attributes.length}</span>
             </h3>
             <div className="attribute-list">
-              {selected.attributes.map((attr) => (
-                <div className="attribute-detail" key={attr.name}>
+              {selected.attributes.slice(0, 200).map((attr) => (
+                <div className="attribute-detail" key={attr.nameRange.start}>
                   <button
-                    disabled={!enabled}
+                    disabled={
+                      !enabled ||
+                      attr.name.length > 1024 ||
+                      attr.name.length !==
+                        attr.nameRange.end - attr.nameRange.start
+                    }
                     title="Show attribute in source"
                     onClick={() =>
                       bridge.post({
@@ -113,10 +123,12 @@ export function Inspector({
                       })
                     }
                   >
-                    @{attr.name}
+                    @{attr.name.slice(0, 4096)}
                   </button>
                   <code>{attr.value}</code>
-                  {attr.namespaceUri && <small>{attr.namespaceUri}</small>}
+                  {attr.namespaceUri && (
+                    <small>{attr.namespaceUri.slice(0, 4096)}</small>
+                  )}
                 </div>
               ))}
             </div>
@@ -125,21 +137,31 @@ export function Inspector({
         {full?.value && (
           <section>
             <h3>Value</h3>
-            <pre className="detail-value">{full.value}</pre>
+            <pre className="detail-value" tabIndex={0} aria-label="Node value">
+              {full.value}
+            </pre>
           </section>
         )}
         <section>
           <h3>Source XML</h3>
           {full ? (
-            <pre className="source-preview">{full.source}</pre>
+            <pre
+              className="source-preview"
+              tabIndex={0}
+              aria-label="Source XML excerpt"
+            >
+              {full.source}
+            </pre>
           ) : (
             <p className="muted">Loading source…</p>
           )}
         </section>
         {full?.truncated && (
           <p className="hint">
-            Large values are shown up to 100,000 characters. Open the source for
-            the complete content.
+            Details are shortened: at most 200 attributes, 4,096 characters per
+            name or namespace, and 100,000 characters of combined node details.
+            Value and source excerpts are capped separately. Open the source for
+            complete content.
           </p>
         )}
       </div>

@@ -1,7 +1,12 @@
-import type { XmlModel, XmlNode, XmlIssue } from "../core/model";
+import type { XmlNode, XmlIssue } from "../core/model";
+import type { WireModel } from "./model-codec";
+import type { SavedView } from "../core/view-state";
+import type { ViewerSettings } from "./settings";
 export type ClientMessage =
   | { type: "ready" }
   | { type: "cancel" }
+  | { type: "retry" }
+  | { type: "showError"; version: number }
   | {
       type: "reveal" | "details";
       version: number;
@@ -10,8 +15,9 @@ export type ClientMessage =
     }
   | { type: "search"; version: number; query: string; requestId: number };
 export type HostMessage =
+  | { type: "settings"; settings: ViewerSettings; changed?: boolean }
   | { type: "loading"; version: number }
-  | { type: "model"; model: XmlModel }
+  | { type: "model"; model: WireModel }
   | { type: "error"; version: number; error: XmlIssue }
   | { type: "selection"; version: number; nodeId: string }
   | {
@@ -23,6 +29,7 @@ export type HostMessage =
       line: number;
       column: number;
       truncated: boolean;
+      attributeCount?: number;
     }
   | {
       type: "search";
@@ -30,10 +37,11 @@ export type HostMessage =
       requestId: number;
       query: string;
       ids: string[];
+      contexts?: Record<string, string>;
     };
 export interface ViewState {
   uri?: string;
-  expandedPaths?: string[];
+  view?: SavedView;
   direction?: "RIGHT" | "DOWN";
   showMetadata?: boolean;
   showWhitespace?: boolean;
@@ -50,9 +58,11 @@ export function validateMessage(value: unknown): ClientMessage | undefined {
   if (!value || typeof value !== "object" || Array.isArray(value)) return;
   const m = value as Record<string, unknown>;
   if ("uri" in m || "command" in m) return;
-  if (m.type === "ready" || m.type === "cancel") return { type: m.type };
+  if (m.type === "ready" || m.type === "cancel" || m.type === "retry")
+    return { type: m.type };
   if (!Number.isSafeInteger(m.version) || (m.version as number) < 0) return;
   const version = m.version as number;
+  if (m.type === "showError") return { type: "showError", version };
   if (
     (m.type === "reveal" || m.type === "details") &&
     typeof m.nodeId === "string" &&
@@ -85,24 +95,4 @@ export function validateMessage(value: unknown): ClientMessage | undefined {
       query: m.query,
       requestId: m.requestId as number,
     };
-}
-export function snapshotModel(model: XmlModel): XmlModel {
-  const shorten = (value: string) =>
-    value.length > 220 ? value.slice(0, 219) + "…" : value;
-  return {
-    ...model,
-    nodes: Object.fromEntries(
-      Object.entries(model.nodes).map(([id, node]) => [
-        id,
-        {
-          ...node,
-          value: shorten(node.value),
-          attributes: node.attributes.map((attr) => ({
-            ...attr,
-            value: shorten(attr.value),
-          })),
-        },
-      ]),
-    ),
-  };
 }

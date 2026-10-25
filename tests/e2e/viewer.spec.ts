@@ -1,22 +1,84 @@
 import { test, expect } from "@playwright/test";
-test("does not allow interaction with a graph from the previous document version while laying out the next one", async ({
+test("reuses the layout worker resource across branch changes and repeated source selection", async ({
+  page,
+}) => {
+  let requests = 0;
+  page.on("request", (request) => {
+    if (request.url().endsWith("/layout-worker.js")) requests++;
+  });
+  await page.goto("/");
+  await page
+    .getByRole("button", { name: "Expand collection", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Collapse collection", exact: true })
+    .click();
+  await page
+    .getByRole("button", { name: "Expand collection", exact: true })
+    .click();
+  await expect(
+    page.getByRole("group", { name: "element book", exact: true }),
+  ).toHaveCount(3);
+  await page.evaluate(() => (window as any).xmlViewerDemo.select(180));
+  await expect(
+    page
+      .getByTestId("node-inspector")
+      .getByRole("heading", { name: "catalog", exact: true }),
+  ).toBeVisible();
+  const baseline = requests;
+  for (let i = 0; i < 5; i++)
+    await page.evaluate(() => (window as any).xmlViewerDemo.select(181));
+  await page.waitForTimeout(300);
+  expect(requests).toBe(baseline);
+  expect(requests).toBe(1);
+});
+test("preserves the inspected keyed element and focused branch after a source edit", async ({
   page,
 }) => {
   await page.goto("/");
-  await expect(page.locator(".react-flow__node")).not.toHaveCount(0);
-  let release!: () => void;
-  const blocked = new Promise<void>((resolve) => {
-    release = resolve;
+  await page.evaluate(() =>
+    (window as any).xmlViewerDemo.update(
+      '<r><item id="a"><title>A</title></item><item id="b"><title>B</title></item></r>',
+    ),
+  );
+  await page.getByRole("searchbox").fill('"b"');
+  await page.getByRole("searchbox").fill("b");
+  await expect(page.getByTestId("node-inspector")).toContainText("id");
+  // Select the unique identity attribute rather than a common element name.
+  await page.evaluate(() => (window as any).xmlViewerDemo.select(60));
+  await page.getByRole("button", { name: "Focus branch", exact: true }).click();
+  await page.evaluate(() =>
+    (window as any).xmlViewerDemo.update(
+      '<r><item id="new"/><item id="a"><title>A</title></item><item id="b"><title>Updated B</title></item></r>',
+    ),
+  );
+  await expect(page.getByTestId("node-inspector")).toContainText("Updated B");
+  await expect(
+    page.getByRole("button", { name: "Show full document" }),
+  ).toBeVisible();
+});
+test("does not allow interaction with a graph from the previous document version while laying out the next one", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const OriginalWorker = window.Worker;
+    window.Worker = class extends OriginalWorker {
+      postMessage(message: any, ...args: any[]) {
+        if ((window as any).delayLayout)
+          setTimeout(() => super.postMessage(message, ...(args as [any])), 700);
+        else super.postMessage(message, ...(args as [any]));
+      }
+    };
   });
-  await page.route("**/layout-worker.js", async (route) => {
-    await blocked;
-    await route.continue();
+  await page.goto("/");
+  await expect(page.locator(".react-flow__node")).not.toHaveCount(0);
+  await page.evaluate(() => {
+    (window as any).delayLayout = true;
   });
   await page.evaluate(() =>
     (window as any).xmlViewerDemo.update("<new-root><new-item/></new-root>"),
   );
   await expect(page.locator(".react-flow")).toHaveAttribute("inert", "");
-  release();
   await expect(page.locator(".react-flow")).not.toHaveAttribute("inert", "");
   await expect(
     page.getByRole("group", { name: "element new-root", exact: true }),
@@ -203,4 +265,88 @@ test("shows metadata, preserves text safely, and renders in a narrow panel", asy
   expect(
     await page.evaluate(() => document.body.scrollWidth <= window.innerWidth),
   ).toBe(true);
+});
+
+test("pauses a preview and retries the latest XML, with breadcrumbs and selection history", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await page.getByRole("searchbox").fill("bk-101");
+  await expect(page.getByTestId("node-inspector")).toContainText("bk-101");
+  const nav = page.getByRole("navigation", { name: "XML navigation" });
+  await expect(
+    nav.getByRole("button", { name: "catalog", exact: true }),
+  ).toBeVisible();
+  await nav.getByRole("button", { name: "catalog", exact: true }).click();
+  await expect(
+    page
+      .getByTestId("node-inspector")
+      .getByRole("heading", { name: "catalog", exact: true }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Back to previous node" }).click();
+  await expect(page.getByTestId("node-inspector")).toContainText("bk-101");
+  await page.getByRole("button", { name: "Forward to next node" }).click();
+  await expect(
+    page
+      .getByTestId("node-inspector")
+      .getByRole("heading", { name: "catalog", exact: true }),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Pause preview", exact: true })
+    .click();
+  await expect(page.getByRole("alert")).toContainText("paused");
+  await expect(page.locator(".react-flow")).toHaveAttribute("inert", "");
+  await page.evaluate(() =>
+    (window as any).xmlViewerDemo.update("<latest><ok/></latest>"),
+  );
+  await page.getByRole("button", { name: "Retry", exact: true }).click();
+  await expect(page.getByRole("alert")).toHaveCount(0);
+  await expect(
+    page.getByRole("group", { name: "element latest", exact: true }),
+  ).toBeVisible();
+});
+test("applies live settings and offers source navigation for syntax errors", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await expect(page.locator(".react-flow__node")).not.toHaveCount(0);
+  await page.evaluate(() =>
+    (window as any).xmlViewerDemo.configure({
+      direction: "DOWN",
+      showMetadata: true,
+    }),
+  );
+  await expect(page.locator(".viewer")).toHaveAttribute(
+    "data-direction",
+    "DOWN",
+  );
+  await expect(
+    page.getByRole("group", { name: "comment #comment", exact: true }),
+  ).toBeVisible();
+  await page.evaluate(() => (window as any).xmlViewerDemo.update("<broken>"));
+  await page.getByRole("button", { name: "Show error in source" }).click();
+  await expect(page.locator("html")).toHaveAttribute(
+    "data-error-revealed",
+    "2",
+  );
+});
+test("search reveals a result beyond the visible node budget", async ({
+  page,
+}) => {
+  await page.goto("/");
+  await expect(page.locator(".react-flow__node")).not.toHaveCount(0);
+  await page.evaluate(() =>
+    (window as any).xmlViewerDemo.update(
+      "<r>" +
+        Array.from({ length: 1500 }, (_, i) => `<item id="row-${i}"/>`).join(
+          "",
+        ) +
+        "</r>",
+    ),
+  );
+  await page.getByRole("searchbox").fill("row-1499");
+  await expect(page.getByTestId("node-inspector")).toContainText("row-1499");
+  await expect(page.locator(".react-flow__node.selected")).toContainText(
+    "row-1499",
+  );
 });

@@ -19,6 +19,7 @@ export const XmlCard = memo(function XmlCard({
   selected,
 }: NodeProps<XmlFlowNode>) {
   const { xml, summary, childCount, expanded, shownCount, direction } = data;
+  const label = xml.name.slice(0, 256);
   const horizontal = direction === "RIGHT";
   return (
     <div
@@ -33,7 +34,7 @@ export const XmlCard = memo(function XmlCard({
         <span className="tag-mark" aria-hidden="true">
           {xml.kind === "element" ? "‹›" : xml.kind === "document" ? "⌘" : "#"}
         </span>
-        <strong title={xml.name}>{xml.name}</strong>
+        <strong title={label}>{label}</strong>
         <span className="node-kind">
           {xml.kind === "element" ? "" : xml.kind}
         </span>
@@ -41,7 +42,9 @@ export const XmlCard = memo(function XmlCard({
       <div className="card-body">
         {xml.attributes.slice(0, 2).map((attr) => (
           <div className="attribute-preview" key={attr.name}>
-            <span title={attr.name}>@{attr.name}</span>
+            <span title={attr.name.slice(0, 256)}>
+              @{attr.name.slice(0, 256)}
+            </span>
             <span title={attr.value}>{attr.value}</span>
           </div>
         ))}
@@ -69,7 +72,7 @@ export const XmlCard = memo(function XmlCard({
         {childCount > 0 && (
           <button
             className="branch-button nodrag nopan"
-            aria-label={`${expanded ? "Collapse" : "Expand"} ${xml.name}`}
+            aria-label={`${expanded ? "Collapse" : "Expand"} ${label}`}
             onClick={(event) => {
               event.stopPropagation();
               data.toggle(xml.id);
@@ -81,7 +84,7 @@ export const XmlCard = memo(function XmlCard({
         {expanded && childCount > shownCount && (
           <button
             className="branch-button nodrag nopan"
-            aria-label={`Show more children of ${xml.name}`}
+            aria-label={`Show more children of ${label}`}
             onClick={(event) => {
               event.stopPropagation();
               data.more(xml.id);

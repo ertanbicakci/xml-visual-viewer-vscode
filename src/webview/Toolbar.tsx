@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { GraphProjection } from "../core/graph";
 import type { useViewer } from "./useViewer";
 
@@ -17,6 +17,26 @@ export function Toolbar({
   setInspectorOpen,
 }: ToolbarProps) {
   const [optionsOpen, setOptionsOpen] = useState(false);
+  const menu = useRef<HTMLDivElement>(null);
+  const menuButton = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!optionsOpen) return;
+    const pointer = (event: PointerEvent) => {
+      if (!menu.current?.contains(event.target as Node)) setOptionsOpen(false);
+    };
+    const keyboard = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setOptionsOpen(false);
+        menuButton.current?.focus();
+      }
+    };
+    document.addEventListener("pointerdown", pointer);
+    document.addEventListener("keydown", keyboard);
+    return () => {
+      document.removeEventListener("pointerdown", pointer);
+      document.removeEventListener("keydown", keyboard);
+    };
+  }, [optionsOpen]);
   return (
     <div className="toolbar">
       <div className="search-control">
@@ -40,6 +60,11 @@ export function Toolbar({
                 ? `${v.matchIndex + 1} of ${v.matches.length}`
                 : "No matches"}
             </span>
+            {v.matches.length > 0 && (
+              <span className="search-context" title="Matched field">
+                {v.matchContext}
+              </span>
+            )}
             <button
               className="quiet"
               aria-label="Previous match"
@@ -93,8 +118,9 @@ export function Toolbar({
         >
           Collapse
         </button>
-        <div className="view-options">
+        <div className="view-options" ref={menu}>
           <button
+            ref={menuButton}
             aria-expanded={optionsOpen}
             onClick={() => setOptionsOpen(!optionsOpen)}
           >

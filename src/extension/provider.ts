@@ -1,10 +1,13 @@
+import { detailSnapshot } from "../shared/details";
+import { PanelSessions } from "./panel-sessions";
+import { normalizeSettings, type ViewerSettings } from "../shared/settings";
+import { encodeModel } from "../shared/model-codec";
 import * as vscode from "vscode";
 import { DocumentController } from "./controller";
 import { WorkerParser } from "./worker-parser";
 import { webviewHtml } from "./html";
-import { nodeAtOffset, previewValue, searchModel } from "../core/graph";
+import { nodeAtOffset, previewValue, searchWithContext } from "../core/graph";
 import {
-  snapshotModel,
   validateMessage,
   type HostMessage,
   type ClientMessage,
@@ -14,7 +17,9 @@ import type { ParseResult } from "../core/model";
 interface DocumentEntry {
   document: vscode.TextDocument;
   controller: DocumentController;
-  panels: Set<vscode.WebviewPanel>;
+  panels: PanelSessions<vscode.WebviewPanel>;
+  processing: boolean;
+  started: number;
   last?: HostMessage;
   timer?: ReturnType<typeof setTimeout>;
 }
@@ -23,6 +28,54 @@ export class XmlPreviewProvider
   implements vscode.CustomTextEditorProvider, vscode.Disposable
 {
   static readonly viewType = "xmlViewer.preview";
+  private diagnostics =
+    vscode.languages.createDiagnosticCollection("xmlViewer");
+  private output = vscode.window.createOutputChannel("XML Viewer", {
+    log: true,
+  });
+  private lastReport: Record<string, unknown> = {};
+  private settings(document: vscode.TextDocument): ViewerSettings {
+    const c = vscode.workspace.getConfiguration("xmlViewer", document.uri);
+    return normalizeSettings(
+      Object.fromEntries(
+        [
+          "direction",
+          "initialDepth",
+          "followSource",
+          "showMetadata",
+          "showWhitespace",
+          "updateDelay",
+          "maxVisibleNodes",
+        ].map((key) => [key, c.get(key)]),
+      ),
+    );
+  }
+  async copyDiagnostics(): Promise<void> {
+    await vscode.env.clipboard.writeText(
+      JSON.stringify(
+        {
+          extension: this.context.extension.packageJSON.version,
+          vscode: vscode.version,
+          platform: process.platform,
+          ...this.lastReport,
+        },
+        null,
+        2,
+      ),
+    );
+    void vscode.window.showInformationMessage(
+      "XML Viewer diagnostic report copied. XML content and file paths are excluded.",
+    );
+  }
+  private update(entry: DocumentEntry): void {
+    if (!entry.panels.hasActive) return;
+    entry.started = Date.now();
+    entry.processing = true;
+    void entry.controller.update(
+      entry.document.getText(),
+      entry.document.version,
+    );
+  }
   private entries = new Map<string, DocumentEntry>();
   private subscriptions: vscode.Disposable[];
   private decoration = vscode.window.createTextEditorDecorationType({
@@ -34,9 +87,22 @@ export class XmlPreviewProvider
   });
   constructor(private context: vscode.ExtensionContext) {
     this.subscriptions = [
+      vscode.workspace.onDidChangeConfiguration((event) => {
+        for (const entry of this.entries.values())
+          if (event.affectsConfiguration("xmlViewer", entry.document.uri)) {
+            for (const panel of entry.panels.active())
+              void panel.webview.postMessage({
+                type: "settings",
+                settings: this.settings(entry.document),
+                changed: true,
+              } satisfies HostMessage);
+          }
+      }),
       vscode.workspace.onDidChangeTextDocument((event) => {
         const entry = this.entries.get(event.document.uri.toString());
         if (!entry || event.contentChanges.length === 0) return;
+        entry.processing = false;
+        this.diagnostics.delete(entry.document.uri);
         entry.controller.cancel(); // Invalidate navigation before the debounce.
         clearTimeout(entry.timer);
         this.clearHighlight(entry.document);
@@ -44,12 +110,10 @@ export class XmlPreviewProvider
           type: "loading",
           version: entry.document.version,
         });
-        entry.timer = setTimeout(() => {
-          void entry.controller.update(
-            entry.document.getText(),
-            entry.document.version,
-          );
-        }, 400);
+        entry.timer = setTimeout(
+          () => this.update(entry),
+          this.settings(entry.document).updateDelay,
+        );
       }),
       vscode.window.onDidChangeTextEditorSelection((event) => {
         const entry = this.entries.get(
@@ -58,13 +122,19 @@ export class XmlPreviewProvider
         const model = entry?.controller.current(
           event.textEditor.document.version,
         );
-        if (!entry || !model || !event.selections[0]) return;
+        if (
+          !entry ||
+          !model ||
+          !event.selections[0] ||
+          !this.settings(entry.document).followSource
+        )
+          return;
         const node = nodeAtOffset(
           model,
           entry.document.offsetAt(event.selections[0].active),
         );
         if (node)
-          for (const panel of entry.panels)
+          for (const panel of entry.panels.active())
             void panel.webview.postMessage({
               type: "selection",
               version: model.version,
@@ -84,7 +154,9 @@ export class XmlPreviewProvider
     if (!entry) {
       const created = {
         document,
-        panels: new Set<vscode.WebviewPanel>(),
+        panels: new PanelSessions<vscode.WebviewPanel>(),
+        processing: false,
+        started: 0,
       } as DocumentEntry;
       created.controller = new DocumentController(
         uri,
@@ -124,36 +196,69 @@ export class XmlPreviewProvider
         clearTimeout(bound.timer);
         bound.controller.dispose();
         this.entries.delete(uri);
+        this.diagnostics.delete(document.uri);
         this.clearHighlight(document);
       }
     });
     panel.webview.html = webviewHtml(panel.webview, this.context.extensionUri);
-    if (isNew)
-      void bound.controller.update(document.getText(), document.version);
+    if (
+      isNew ||
+      (!bound.processing && !bound.controller.current(document.version))
+    )
+      this.update(bound);
   }
 
   private onResult(
     entry: DocumentEntry,
     result: ParseResult | { loading: number },
   ): void {
-    if ("loading" in result)
+    if ("loading" in result) {
       this.broadcast(entry, { type: "loading", version: result.loading });
-    else if (result.ok)
+      return;
+    }
+    entry.processing = false;
+    this.lastReport = {
+      result: result.ok ? "ok" : result.error.code,
+      durationMs: Date.now() - entry.started,
+      ...(result.ok
+        ? { nodes: result.model.nodeCount, bytes: result.model.byteLength }
+        : {}),
+      settings: this.settings(entry.document),
+    };
+    this.output.info(JSON.stringify(this.lastReport));
+    if (result.ok) {
+      this.diagnostics.delete(entry.document.uri);
       this.broadcast(entry, {
         type: "model",
-        model: snapshotModel(result.model),
+        model: encodeModel(result.model, true),
       });
-    else
+    } else {
+      if (["syntax", "namespace"].includes(result.error.code)) {
+        const start = entry.document.positionAt(result.error.offset);
+        const end = entry.document.positionAt(
+          Math.min(entry.document.getText().length, result.error.offset + 1),
+        );
+        const diagnostic = new vscode.Diagnostic(
+          new vscode.Range(start, end),
+          result.error.message,
+          vscode.DiagnosticSeverity.Error,
+        );
+        diagnostic.source = "XML Viewer";
+        diagnostic.code = result.error.code;
+        this.diagnostics.set(entry.document.uri, [diagnostic]);
+      } else this.diagnostics.delete(entry.document.uri);
       this.broadcast(entry, {
         type: "error",
         version: entry.document.version,
         error: result.error,
       });
+    }
   }
 
   private broadcast(entry: DocumentEntry, message: HostMessage): void {
     entry.last = message;
-    for (const panel of entry.panels) void panel.webview.postMessage(message);
+    for (const panel of entry.panels.active())
+      void panel.webview.postMessage(message);
   }
 
   private async onMessage(
@@ -162,29 +267,90 @@ export class XmlPreviewProvider
     message: ClientMessage,
   ): Promise<void> {
     if (message.type === "ready") {
+      await panel.webview.postMessage({
+        type: "settings",
+        settings: this.settings(entry.document),
+      } satisfies HostMessage);
+      if (entry.panels.isPaused(panel)) {
+        await this.onMessage(entry, panel, { type: "cancel" });
+        return;
+      }
       if (entry.last?.type !== "model" && entry.controller.model)
         await panel.webview.postMessage({
           type: "model",
-          model: snapshotModel(entry.controller.model),
+          model: encodeModel(entry.controller.model, true),
         } satisfies HostMessage);
       if (entry.last) await panel.webview.postMessage(entry.last);
       return;
     }
     if (message.type === "cancel") {
-      clearTimeout(entry.timer);
-      entry.controller.cancel();
-      this.broadcast(entry, {
+      entry.panels.pause(panel);
+      if (!entry.panels.hasActive) {
+        clearTimeout(entry.timer);
+        entry.controller.cancel();
+        entry.processing = false;
+      }
+      await panel.webview.postMessage({
         type: "error",
         version: entry.document.version,
         error: {
-          code: "internal",
+          code: "cancelled",
           message:
-            "XML processing cancelled. Edit the document or reopen the preview to try again.",
+            "This preview is paused. Choose Retry to read the latest document.",
           offset: 0,
           line: 1,
           column: 1,
         },
+      } satisfies HostMessage);
+      return;
+    }
+    if (message.type === "retry") {
+      entry.panels.resume(panel);
+      await panel.webview.postMessage({
+        type: "settings",
+        settings: this.settings(entry.document),
+      } satisfies HostMessage);
+      const model = entry.controller.current(entry.document.version);
+      if (model)
+        await panel.webview.postMessage({
+          type: "model",
+          model: encodeModel(model, true),
+        } satisfies HostMessage);
+      else if (entry.processing)
+        await panel.webview.postMessage({
+          type: "loading",
+          version: entry.document.version,
+        } satisfies HostMessage);
+      else {
+        clearTimeout(entry.timer);
+        this.update(entry);
+      }
+      return;
+    }
+    if (entry.panels.isPaused(panel)) return;
+    if (message.type === "showError") {
+      if (
+        entry.last?.type !== "error" ||
+        entry.last.version !== message.version ||
+        entry.document.version !== message.version ||
+        !["syntax", "namespace"].includes(entry.last.error.code)
+      )
+        return;
+      const editor = await vscode.window.showTextDocument(entry.document, {
+        viewColumn: vscode.ViewColumn.Beside,
+        preserveFocus: false,
       });
+      if (
+        entry.document.version !== message.version ||
+        entry.last?.type !== "error"
+      )
+        return;
+      const position = entry.document.positionAt(entry.last.error.offset);
+      editor.selection = new vscode.Selection(position, position);
+      editor.revealRange(
+        editor.selection,
+        vscode.TextEditorRevealType.InCenterIfOutsideViewport,
+      );
       return;
     }
     const model = entry.controller.current(message.version);
@@ -195,7 +361,7 @@ export class XmlPreviewProvider
         version: model.version,
         requestId: message.requestId,
         query: message.query,
-        ids: searchModel(model, message.query),
+        ...searchWithContext(model, message.query),
       } satisfies HostMessage);
       return;
     }
@@ -207,17 +373,11 @@ export class XmlPreviewProvider
       const value = previewValue(model, node);
       const position = doc.positionAt(node.range.start);
       const cap = 100_000;
+      const snapshot = detailSnapshot(node);
       await panel.webview.postMessage({
         type: "details",
         version: model.version,
-        node: {
-          ...node,
-          value: node.value.slice(0, cap),
-          attributes: node.attributes.map((attr) => ({
-            ...attr,
-            value: attr.value.slice(0, cap),
-          })),
-        },
+        ...snapshot,
         value: value.slice(0, cap),
         source: text.slice(
           node.range.start,
@@ -228,7 +388,7 @@ export class XmlPreviewProvider
         truncated:
           node.range.end - node.range.start > cap ||
           value.length > cap ||
-          node.attributes.some((attr) => attr.value.length > cap),
+          snapshot.truncated,
       } satisfies HostMessage);
       return;
     }
@@ -282,5 +442,7 @@ export class XmlPreviewProvider
     }
     this.entries.clear();
     this.decoration.dispose();
+    this.diagnostics.dispose();
+    this.output.dispose();
   }
 }

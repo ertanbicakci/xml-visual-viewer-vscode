@@ -1,5 +1,5 @@
 {
-  "measuredAt": "2026-10-25T11:05:31.465Z",
+  "measuredAt": "2026-10-25T17:16:10.569Z",
   "node": "v25.2.0",
   "os": "darwin 27.2.0 arm64",
   "cpu": "Apple M3 Pro",
@@ -11,8 +11,8 @@
       "nodes": 3002,
       "elements": 2001,
       "samples": 10,
-      "medianMs": 5.76,
-      "p95Ms": 10.29
+      "medianMs": 20.05,
+      "p95Ms": 22.97
     },
     {
       "profile": "large",
@@ -20,8 +20,8 @@
       "nodes": 48002,
       "elements": 32001,
       "samples": 10,
-      "medianMs": 80.01,
-      "p95Ms": 179.6
+      "medianMs": 325.87,
+      "p95Ms": 527.7
     }
   ]
 }

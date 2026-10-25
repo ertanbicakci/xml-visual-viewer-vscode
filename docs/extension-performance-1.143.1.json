@@ -1,0 +1,16 @@
+{
+  "measuredAt": "2026-10-25T17:11:50.306Z",
+  "vscode": "1.143.1",
+  "os": "darwin arm64",
+  "cpu": "Apple M3 Pro",
+  "samples": 1,
+  "openingMs": 451,
+  "scope": "Actual VS Code command invocation to interactive graph and two animation frames. Includes parser worker, IPC, Webview setup, ELK and rendering. Extension activation and VS Code startup precede measurement. Source update includes configured 400ms debounce. One sample per document, not p95.",
+  "large": {
+    "bytes": 3593799,
+    "nodes": 48002,
+    "openingMs": 1996,
+    "searchMs": 504,
+    "updateMs": 1850
+  }
+}

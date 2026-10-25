@@ -1,0 +1,51 @@
+{
+  "measuredAt": "2026-10-25T17:14:50.412Z",
+  "os": "darwin 27.2.0 arm64",
+  "cpu": "Apple M3 Pro",
+  "browser": "156.0.8078.4",
+  "scope": "Standalone browser harness. Cold browser context to interactive graph and two animation frames; includes asset loading, synchronous harness parsing, wire encoding/decoding, ELK worker and rendering. Search includes its 160ms debounce. Source updates exclude the Extension Host 400ms debounce and IPC; use extension-performance reports for actual VS Code opening. Heap is Chromium main renderer only, excluding workers and Extension Host. Five samples are indicative, not a performance guarantee.",
+  "results": [
+    {
+      "profile": "standard",
+      "bytes": 221799,
+      "nodes": 3002,
+      "coldOpen": {
+        "samples": 5,
+        "medianMs": 422.8,
+        "p95Ms": 511.8
+      },
+      "searchLastElement": {
+        "samples": 5,
+        "medianMs": 248.9,
+        "p95Ms": 250
+      },
+      "sourceUpdate": {
+        "samples": 5,
+        "medianMs": 66.7,
+        "p95Ms": 66.8
+      },
+      "maxBrowserMainHeapMiB": 22.7
+    },
+    {
+      "profile": "large",
+      "bytes": 3593799,
+      "nodes": 48002,
+      "coldOpen": {
+        "samples": 5,
+        "medianMs": 755.3,
+        "p95Ms": 891.7
+      },
+      "searchLastElement": {
+        "samples": 5,
+        "medianMs": 316.6,
+        "p95Ms": 317.2
+      },
+      "sourceUpdate": {
+        "samples": 5,
+        "medianMs": 565.9,
+        "p95Ms": 566.6
+      },
+      "maxBrowserMainHeapMiB": 167.1
+    }
+  ]
+}

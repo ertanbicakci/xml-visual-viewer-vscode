@@ -71,10 +71,10 @@ export function projectGraph(
   );
   return result;
 }
-export function initialExpanded(model: XmlModel): Set<string> {
+export function initialExpanded(model: XmlModel, depth = 2): Set<string> {
   return new Set(
     Object.values(model.nodes)
-      .filter((n) => n.depth < 2)
+      .filter((n) => n.depth < depth)
       .map((n) => n.id),
   );
 }
@@ -108,7 +108,21 @@ export function revealNode(
     nextPages[parent.id] = Math.max(nextPages[parent.id] ?? 1, page);
     node = parent;
   }
-  return { id: targetId, expanded: nextExpanded, pages: nextPages };
+  const sameExpanded =
+    nextExpanded.size === expanded.size &&
+    [...nextExpanded].every((id) => expanded.has(id));
+  const meaningfulPages = Object.fromEntries(
+    Object.entries(nextPages).filter(([, page]) => page > 1),
+  );
+  const samePages =
+    Object.keys(meaningfulPages).length ===
+      Object.keys(pages).filter((key) => pages[key]! > 1).length &&
+    Object.entries(meaningfulPages).every(([id, page]) => pages[id] === page);
+  return {
+    id: targetId,
+    expanded: sameExpanded ? expanded : nextExpanded,
+    pages: samePages ? pages : meaningfulPages,
+  };
 }
 export function nodeAtOffset(
   model: XmlModel,
@@ -131,23 +145,51 @@ export function nodeAtOffset(
   };
   return visit(model.nodes[model.rootId]!);
 }
-export function searchModel(model: XmlModel, query: string): string[] {
+export type SearchContext = "name" | "namespace" | "attribute" | "text";
+export function searchWithContext(
+  model: XmlModel,
+  query: string,
+): { ids: string[]; contexts: Record<string, SearchContext> } {
   const needle = query.trim().toLocaleLowerCase();
-  if (!needle) return [];
-  const found: string[] = [];
+  const result = {
+    ids: [] as string[],
+    contexts: {} as Record<string, SearchContext>,
+  };
+  if (!needle) return result;
+  const cache = new Map<string, boolean>();
+  const matches = (value: string) => {
+    let found = cache.get(value);
+    if (found === undefined) {
+      found = value.toLocaleLowerCase().includes(needle);
+      cache.set(value, found);
+    }
+    return found;
+  };
   for (const node of Object.values(model.nodes)) {
     if (node.kind === "document") continue;
-    const haystack = [
-      node.name,
-      node.namespaceUri,
-      node.value,
-      ...node.attributes.flatMap((a) => [a.name, a.value, a.namespaceUri]),
-    ]
-      .join("\n")
-      .toLocaleLowerCase();
-    if (haystack.includes(needle)) found.push(node.id);
+    const context: SearchContext | undefined = matches(node.name)
+      ? "name"
+      : matches(node.namespaceUri)
+        ? "namespace"
+        : matches(node.value)
+          ? "text"
+          : node.attributes.some(
+                (a) =>
+                  matches(a.name) ||
+                  matches(a.value) ||
+                  matches(a.namespaceUri),
+              )
+            ? "attribute"
+            : undefined;
+    if (context) {
+      result.ids.push(node.id);
+      result.contexts[node.id] = context;
+    }
   }
-  return found;
+  return result;
+}
+export function searchModel(model: XmlModel, query: string): string[] {
+  return searchWithContext(model, query).ids;
 }
 export function previewValue(model: XmlModel, node: XmlNode): string {
   if (node.value) return node.value;

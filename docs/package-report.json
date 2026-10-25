@@ -1,0 +1,28 @@
+{
+  "file": "xml-visual-viewer-0.2.0.vsix",
+  "version": "0.2.0",
+  "publisher": "local",
+  "bytes": 750503,
+  "sha256": "5b1cc1d90eb4c80390770285fff1c403b688a1c1b5d1d36c07f35b29b716f1f2",
+  "files": [
+    "[Content_Types].xml",
+    "extension.vsixmanifest",
+    "extension/LICENSE.txt",
+    "extension/THIRD_PARTY_NOTICES.txt",
+    "extension/assets/icon.png",
+    "extension/changelog.md",
+    "extension/dist/extension.cjs",
+    "extension/dist/parse-worker.cjs",
+    "extension/dist/webview/app.css",
+    "extension/dist/webview/app.js",
+    "extension/dist/webview/layout-worker.js",
+    "extension/docs/images/preview.png",
+    "extension/examples/catalog.xml",
+    "extension/examples/mixed-content.xml",
+    "extension/examples/pom.xml",
+    "extension/examples/soap.xml",
+    "extension/package.json",
+    "extension/readme.md"
+  ],
+  "scope": "Package structure and identity verified locally. Does not establish Marketplace registration or cross-platform runtime compatibility."
+}

@@ -1,6 +1,7 @@
 import type { Parser } from "./controller";
 import type { ParseResult } from "../core/model";
 import { Worker } from "node:worker_threads";
+import { decodeModel, type WireModel } from "../shared/model-codec";
 export class WorkerParser implements Parser {
   private stop?: () => void;
   constructor(
@@ -12,6 +13,7 @@ export class WorkerParser implements Parser {
     return new Promise((resolve, reject) => {
       const worker = new Worker(this.workerPath, {
         workerData: { source, uri, version },
+        resourceLimits: { maxOldGenerationSizeMb: 256 },
       });
       let done = false;
       const finish = (result?: ParseResult, error?: Error) => {
@@ -40,7 +42,16 @@ export class WorkerParser implements Parser {
       );
       this.stop = () =>
         finish(undefined, new Error("XML processing cancelled."));
-      worker.once("message", (result: ParseResult) => finish(result));
+      worker.once(
+        "message",
+        (
+          result:
+            Exclude<ParseResult, { ok: true }> | { ok: true; model: WireModel },
+        ) =>
+          finish(
+            result.ok ? { ok: true, model: decodeModel(result.model) } : result,
+          ),
+      );
       worker.once("error", (error) =>
         finish(
           undefined,

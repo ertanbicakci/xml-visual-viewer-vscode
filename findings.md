@@ -38,3 +38,12 @@ Tarih: 25 Ekim 2026.
 - Namespace scope kayıtları prototype'siz olmalı; `<toString:x/>` gibi tanımsız prefix'ler yanlışlıkla JavaScript prototype üyelerinden çözümlenmemeli.
 - ELK bundled yapısı dedicated worker içinde kullanıldığında iç Worker constructor'ında hata verdi. Ana Webview'da küçük elk-api ve blob olarak yüklenen upstream worker sorunu giderdi; CSP ve gerçek VS Code testleri geçti.
 - vsce ignore kuralları pozitif/negatif listeler olarak uygulanıyor; genel `!dist/**` ifadesi daha sonraki hariç tutmaları etkisiz kıldı. Runtime dosyalarına tek tek allowlist uygulanarak düzeltildi.
+
+## Ürünleştirme bulguları
+- Aynı düğüme tekrarlanan source selection, expansion/page Set/record referanslarını gereksiz yenileyerek layout ve worker fetch başlatıyordu. Referanslar değişmediyse korunuyor; source ve topoloji konumları tekrar kullanılıyor.
+- Tekrarlanan uzun yollar ve namespace'ler küçük XML'in aktarımını katlıyordu. String tablosu ve hesaplanan yollar bu büyümeyi azaltıyor. Inspector için ayrıca birleşik detay bütçesi gerekli; yalnızca alan başına sınır yeterli değil.
+- Eski belgede tekrarlanan ID'nin yeni belgede tek kalması, yanlış seçim geri yüklemesine yol açabiliyordu. Her iki belgede tekillik aranıyor.
+- Aramada görünür bütçenin dışındaki düğüme parent'ı odaklamak yetmiyor; aranan düğümün kendisine odaklanmak gerekiyor. 1.500 kardeşli tarayıcı testiyle doğrulandı.
+- VS Code focusBorder metin rengi olarak kullanıldığında koyu temada AA kontrastı sağlamadı. Metinde textLink.foreground, odak sınırında focusBorder kullanılıyor.
+- Minimum VS Code 1.96.0 gerçek Webview ve 48.002 düğümlü modelle çalıştı. Kurulu uygulama 1.141.0, indirilen güncel stable 1.143.1; raporlarda gerçek sürümler kullanılıyor.
+- Repository URL olmadan vsce göreli README görsel/linklerini reddediyor. Yerel beta için kendine yeterli metin README üretimi eklendi; repo hazır olduğunda otomatik standart link işleme kullanılacak.

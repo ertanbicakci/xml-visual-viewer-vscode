@@ -35,3 +35,15 @@ Grafik düzenlemeyi desteklemez. XML dosyaları otomatik varsayılan editör ili
 - TypeScript kontrolü ve VSIX paketleme başarılı. Paket 13 dosya / yaklaşık 623 KB; test, demo ve source map dosyaları dışarıda. VSIX ayrı bir VS Code kurulum profiline CLI üzerinden başarıyla kuruldu; kullanıcının normal eklenti profili değiştirilmedi.
 - Parser/model benchmark verisi `docs/benchmark.json` içinde. Apple M3 Pro, Node 25.2.0: 217.799 bayt / 3.002 düğüm için p95 10,29 ms; 3.529.799 bayt / 48.002 düğüm için p95 179,60 ms. Bu sayılar worker başlangıcı, mesajlaşma, ELK ve çizim sürelerini kapsamaz; tam arayüz için performans garantisi değildir.
 - Windows/Linux için CI matrisi eklendi; bu ortamda o platformların çalıştığı iddia edilmiyor. Tüm tema kombinasyonları ve minimum VS Code sürümünde ayrı yayın testi hâlâ yayın öncesi kontrollerdir.
+
+## v0.2.0 ürünleştirme
+
+Güncel kanıt ve açık yayın kapıları `docs/release-readiness.md` içinde tutulur. Üstteki v0.1 doğrulama sayıları tarihsel sonuçlardır.
+
+- Ortak string tablosuyla serileştirme ve istek anında yol hesabı; model/attribute/worker ve detay aktarım bütçeleri.
+- Topoloji konum önbelleği, kalıcı ELK worker, iptal/generation kontrolü ve kaynak seçimi için no-op görünüm güncellemeleri.
+- Parent/namespace/ad, tekil ID ve tam içerik parmak iziyle güvenilir eşleme. Aynı kimliğin eski belgede tekrarlanması da belirsiz kabul edilir. Önceki tüm açık dalları tekrar taramak yerine parent grupları indekslenir.
+- Her panelin aboneliği ayrı duraklatılır. Shared controller diğer aktif panelleri günceller; son aktif panel durursa worker sonlanır.
+- Resource settings, Problems, içeriksiz log/rapor, hata konumu, breadcrumb/geçmiş ve tam değerlerde arama bağlamı.
+- 45 çekirdek ve 22 browser senaryosu; minimum/kararlı VS Code ve gerçek büyük belge testi. Paket içeriği ve kimliği Node ZIP directory denetimiyle doğrulanır.
+- Uzak repo olmadığında paket README'sindeki görsel/göreli linkler metne dönüştürülür; sahte bir repo URL'si kullanılmaz. Repo bilgisi eklendiğinde vsce standart link dönüşümünü yapar.

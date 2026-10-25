@@ -82,3 +82,22 @@ describe("graph exploration", () => {
     expect(nodeAtOffset(m, xml.length + 1)).toBeUndefined();
   });
 });
+it("reports whether a search matched names, attributes, namespaces or text", async () => {
+  const { searchWithContext } = await import("../../src/core/graph");
+  const parsed = parseXmlDocument(
+    '<r xmlns="urn:orders"><item id="needle">content</item></r>',
+  );
+  if (!parsed.ok) throw Error(parsed.error.message);
+  expect(
+    Object.values(searchWithContext(parsed.model, "needle").contexts),
+  ).toContain("attribute");
+  expect(
+    Object.values(searchWithContext(parsed.model, "content").contexts),
+  ).toContain("text");
+  expect(
+    Object.values(searchWithContext(parsed.model, "urn:orders").contexts),
+  ).toContain("namespace");
+  expect(
+    Object.values(searchWithContext(parsed.model, "item").contexts),
+  ).toContain("name");
+});

@@ -1,0 +1,94 @@
+{
+  "source": "Subset of VS Code 1.143.1 bundled themes, with explicit service-color defaults for the standalone harness. This does not emulate OS forced colors.",
+  "themes": [
+    {
+      "name": "vscode-dark",
+      "colors": {
+        "editor.background": "#1F1F1F",
+        "editor.foreground": "#CCCCCC",
+        "sideBar.background": "#181818",
+        "editorWidget.background": "#202020",
+        "descriptionForeground": "#9D9D9D",
+        "panel.border": "#2B2B2B",
+        "focusBorder": "#0078D4",
+        "input.background": "#313131",
+        "input.border": "#3C3C3C",
+        "errorForeground": "#F85149",
+        "inputValidation.errorBackground": "#5A1D1D",
+        "inputValidation.errorBorder": "#BE1100",
+        "button.background": "#0078D4",
+        "button.foreground": "#FFFFFF",
+        "button.hoverBackground": "#026EC1",
+        "editorLineNumber.foreground": "#6E7681",
+        "textLink.foreground": "#4daafc"
+      }
+    },
+    {
+      "name": "vscode-light",
+      "colors": {
+        "editor.background": "#FFFFFF",
+        "editor.foreground": "#3B3B3B",
+        "sideBar.background": "#F8F8F8",
+        "editorWidget.background": "#F8F8F8",
+        "descriptionForeground": "#3B3B3B",
+        "panel.border": "#E5E5E5",
+        "focusBorder": "#005FB8",
+        "input.background": "#FFFFFF",
+        "input.border": "#CECECE",
+        "list.hoverBackground": "#F2F2F2",
+        "errorForeground": "#F85149",
+        "inputValidation.errorBackground": "#F2DEDE",
+        "inputValidation.errorBorder": "#BE1100",
+        "button.background": "#005FB8",
+        "button.foreground": "#FFFFFF",
+        "button.hoverBackground": "#0258A8",
+        "editorLineNumber.foreground": "#6E7681",
+        "textLink.foreground": "#005FB8"
+      }
+    },
+    {
+      "name": "vscode-high-contrast",
+      "colors": {
+        "editor.background": "#000000",
+        "editor.foreground": "#FFFFFF",
+        "sideBar.background": "#000000",
+        "editorWidget.background": "#000000",
+        "descriptionForeground": "#FFFFFF",
+        "panel.border": "#6FC3DF",
+        "focusBorder": "#F38518",
+        "input.background": "#000000",
+        "input.border": "#6FC3DF",
+        "list.hoverBackground": "#0F4A85",
+        "inputValidation.errorBackground": "#000000",
+        "inputValidation.errorBorder": "#FFFFFF",
+        "button.background": "#000000",
+        "button.foreground": "#FFFFFF",
+        "button.hoverBackground": "#0F4A85",
+        "contrastBorder": "#6FC3DF",
+        "textLink.foreground": "#21A6FF"
+      }
+    },
+    {
+      "name": "vscode-high-contrast-light",
+      "colors": {
+        "sideBar.background": "#FFFFFF",
+        "editorWidget.background": "#FFFFFF",
+        "descriptionForeground": "#292929",
+        "panel.border": "#0F4A85",
+        "focusBorder": "#0F4A85",
+        "input.background": "#FFFFFF",
+        "input.border": "#0F4A85",
+        "list.hoverBackground": "#D6EBFF",
+        "inputValidation.errorBackground": "#FFFFFF",
+        "inputValidation.errorBorder": "#B5200D",
+        "button.background": "#0F4A85",
+        "button.foreground": "#FFFFFF",
+        "button.hoverBackground": "#0F4A85",
+        "contrastBorder": "#0F4A85",
+        "textLink.foreground": "#0F4A85",
+        "editor.background": "#FFFFFF",
+        "editor.foreground": "#292929"
+      }
+    }
+  ]
+}

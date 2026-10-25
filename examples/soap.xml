@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" xmlns:ord="urn:example:orders">
+  <soap:Header><ord:RequestId>req-2026-001</ord:RequestId></soap:Header>
+  <soap:Body>
+    <ord:GetOrderResponse>
+      <ord:Order id="order-1001" status="confirmed">
+        <ord:Customer>Ayşe Yılmaz</ord:Customer>
+        <ord:Line sku="XML-01" quantity="2"><ord:Name>XML Handbook</ord:Name></ord:Line>
+        <ord:Line sku="XML-02" quantity="1"><ord:Name>Namespaces Guide</ord:Name></ord:Line>
+        <ord:Total currency="TRY">1499.90</ord:Total>
+      </ord:Order>
+    </ord:GetOrderResponse>
+  </soap:Body>
+</soap:Envelope>

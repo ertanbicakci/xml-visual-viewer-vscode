@@ -2,7 +2,7 @@
   "name": "xml-visual-viewer",
   "displayName": "XML Viewer",
   "description": "Explore XML as an interactive graph, with namespaces, search and source navigation.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "local",
   "license": "MIT",
   "engines": {
@@ -37,6 +37,11 @@
         "command": "xmlViewer.openPreview",
         "title": "Open Visual Preview",
         "category": "XML Viewer"
+      },
+      {
+        "command": "xmlViewer.copyDiagnostics",
+        "title": "Copy Diagnostic Report",
+        "category": "XML Viewer"
       }
     ],
     "menus": {
@@ -66,7 +71,64 @@
         ],
         "priority": "option"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "XML Viewer",
+      "properties": {
+        "xmlViewer.direction": {
+          "type": "string",
+          "enum": [
+            "RIGHT",
+            "DOWN"
+          ],
+          "default": "RIGHT",
+          "description": "Default graph direction for new previews.",
+          "scope": "resource"
+        },
+        "xmlViewer.initialDepth": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 6,
+          "default": 2,
+          "description": "Initially expanded depth (document counts as level zero). Applies to new views without saved state.",
+          "scope": "resource"
+        },
+        "xmlViewer.followSource": {
+          "type": "boolean",
+          "default": true,
+          "description": "Select the corresponding graph node when the source cursor moves.",
+          "scope": "resource"
+        },
+        "xmlViewer.showMetadata": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show XML comments and processing instructions by default.",
+          "scope": "resource"
+        },
+        "xmlViewer.showWhitespace": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show whitespace and separate text nodes by default.",
+          "scope": "resource"
+        },
+        "xmlViewer.updateDelay": {
+          "type": "integer",
+          "minimum": 50,
+          "maximum": 3000,
+          "default": 400,
+          "description": "Delay in milliseconds before reparsing after an edit.",
+          "scope": "resource"
+        },
+        "xmlViewer.maxVisibleNodes": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 2000,
+          "default": 1000,
+          "description": "Maximum drawn nodes. Smaller limits improve graph responsiveness.",
+          "scope": "resource"
+        }
+      }
+    }
   },
   "scripts": {
     "build": "node scripts/build.mjs",
@@ -76,11 +138,13 @@
     "test:extension": "node scripts/test-extension.mjs",
     "benchmark": "node scripts/benchmark.mjs",
     "preview": "node scripts/preview.mjs",
-    "package": "vsce package --no-dependencies --allow-missing-repository",
-    "vscode:prepublish": "npm run check && npm run build && npm run notices",
+    "package": "vsce package --no-dependencies --allow-missing-repository --readme-path artifacts/package-readme.md",
+    "vscode:prepublish": "npm run check && npm run build && npm run notices && node scripts/prepare-readme.mjs",
     "pretest": "node scripts/build.mjs",
     "notices": "node scripts/notices.mjs",
-    "format": "prettier --write src tests scripts *.json *.ts .vscode"
+    "format": "prettier --write src tests scripts *.json *.ts .vscode",
+    "benchmark:ui": "node scripts/benchmark-ui.mjs",
+    "postpackage": "node scripts/verify-package.mjs"
   },
   "dependencies": {
     "@rgrove/parse-xml": "^5.0.0",
@@ -90,6 +154,7 @@
     "react-dom": "^19.3.1"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@playwright/test": "^1.64.1",
     "@types/node": "^26.6.5",
     "@types/react": "^19.3.0",
@@ -107,5 +172,6 @@
     "@azure/msal-node": {
       "uuid": "^11.1.1"
     }
-  }
+  },
+  "icon": "assets/icon.png"
 }

@@ -1,8 +1,9 @@
+import { encodeModel, decodeModel } from "../../src/shared/model-codec";
 import { describe, it, expect } from "vitest";
 import { DocumentController } from "../../src/extension/controller";
 import { parseXmlDocument } from "../../src/core/parser";
 import type { ParseResult } from "../../src/core/model";
-import { validateMessage, snapshotModel } from "../../src/shared/protocol";
+import { validateMessage } from "../../src/shared/protocol";
 
 describe("document version and message boundaries", () => {
   it("immediately invalidates old navigation and ignores late parse results", async () => {
@@ -56,7 +57,7 @@ describe("document version and message boundaries", () => {
       `<r secret="${"a".repeat(1000)}">${"b".repeat(1000)}</r>`,
     );
     if (!r.ok) throw new Error(r.error.message);
-    const snapshot = snapshotModel(r.model);
+    const snapshot = decodeModel(encodeModel(r.model, true));
     const leaf = Object.values(snapshot.nodes).find((n) => n.kind === "text")!;
     expect(leaf.value.length).toBeLessThanOrEqual(240);
     expect(

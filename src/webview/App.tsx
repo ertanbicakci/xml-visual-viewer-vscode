@@ -10,7 +10,7 @@ import {
   type Edge,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
-import ELK from "elkjs/lib/elk-api.js";
+import { LayoutEngine } from "./layout-engine";
 import type { Bridge } from "../shared/protocol";
 import { displayChildren, previewValue, projectGraph } from "../core/graph";
 import { useViewer } from "./useViewer";
@@ -32,11 +32,21 @@ function Workspace({ bridge }: { bridge: Bridge }) {
   const v = useViewer(bridge);
   const [nodes, setNodes] = useState<XmlFlowNode[]>([]);
   const [edges, setEdges] = useState<Edge[]>([]);
+  const [layoutAttempt, setLayoutAttempt] = useState(0);
   const [layoutError, setLayoutError] = useState("");
   const [layoutBusy, setLayoutBusy] = useState(false);
   const [renderedVersion, setRenderedVersion] = useState(-1);
   const [inspectorOpen, setInspectorOpen] = useState(true);
   const flow = useReactFlow<XmlFlowNode>();
+  const engineRef = useRef<LayoutEngine | null>(null);
+  if (!engineRef.current)
+    engineRef.current = new LayoutEngine(
+      document.getElementById("root")?.dataset.workerUri ??
+        "/dist/webview/layout-worker.js",
+    );
+  const engine = engineRef.current;
+  useEffect(() => () => engine.dispose(), [engine]);
+  const viewportIntent = useRef({ focus: v.focusId, direction: v.direction });
   const selectedRef = useRef(v.selected);
   const restoredView = useRef(bridge.getState());
   const firstLayout = useRef(true);
@@ -50,9 +60,18 @@ function Workspace({ bridge }: { bridge: Bridge }) {
             showMetadata: v.showMetadata,
             showWhitespace: v.showWhitespace,
             focusId: v.focusId,
+            maxVisible: v.settings.maxVisibleNodes,
           })
         : undefined,
-    [v.model, v.expanded, v.pages, v.showMetadata, v.showWhitespace, v.focusId],
+    [
+      v.model,
+      v.expanded,
+      v.pages,
+      v.showMetadata,
+      v.showWhitespace,
+      v.focusId,
+      v.settings.maxVisibleNodes,
+    ],
   );
   const toggle = useCallback(
     (id: string) =>
@@ -76,9 +95,12 @@ function Workspace({ bridge }: { bridge: Bridge }) {
   useEffect(() => {
     if (!projection || !v.model) return;
     let disposed = false;
-    let worker: Worker | undefined, objectUrl: string | undefined;
-    let timer: ReturnType<typeof setTimeout> | undefined;
-    setLayoutBusy(true);
+    const signature = engine.signature(
+      projection.nodes.map((n) => n.id),
+      projection.edges,
+      v.direction,
+    );
+    setLayoutBusy(!engine.has(signature));
     setLayoutError("");
     const model = v.model;
     const next: XmlFlowNode[] = projection.nodes.map((xml) => {
@@ -93,7 +115,7 @@ function Workspace({ bridge }: { bridge: Bridge }) {
         width: 236,
         height: 136,
         selected: xml.id === selectedRef.current,
-        ariaLabel: `${xml.kind} ${xml.name}`,
+        ariaLabel: `${xml.kind} ${xml.name.slice(0, 256)}`,
         data: {
           xml,
           summary: previewValue(model, xml).slice(0, 180),
@@ -107,64 +129,18 @@ function Workspace({ bridge }: { bridge: Bridge }) {
       };
     });
     const run = async () => {
-      const url =
-        document.getElementById("root")?.dataset.workerUri ??
-        "/dist/webview/layout-worker.js";
-      const response = await fetch(url);
-      if (!response.ok)
-        throw new Error("Unable to load the graph layout worker.");
-      const source = await response.blob();
-      if (disposed) return;
-      objectUrl = URL.createObjectURL(source);
-      worker = new Worker(objectUrl);
-      timer = setTimeout(() => {
-        worker?.terminate();
-        if (!disposed) {
-          setLayoutBusy(false);
-          setLayoutError(
-            "Graph layout timed out. Collapse branches or focus a smaller subtree.",
-          );
-        }
-      }, 10_000);
-      worker.onerror = () => {
-        clearTimeout(timer);
-        if (!disposed) {
-          setLayoutBusy(false);
-          setLayoutError(
-            "Graph layout could not start. Reopen the preview to try again.",
-          );
-        }
-      };
-      const elk = new ELK({ workerFactory: () => worker! });
-      const graph = await elk.layout({
-        id: "graph",
-        layoutOptions: {
-          "elk.algorithm": "layered",
-          "elk.direction": v.direction,
-          "elk.spacing.nodeNode": "28",
-          "elk.layered.spacing.nodeNodeBetweenLayers": "72",
-          "elk.layered.considerModelOrder.strategy": "NODES_AND_EDGES",
-          "elk.layered.crossingMinimization.forceNodeModelOrder": "true",
-        },
-        children: next.map((n) => ({ id: n.id, width: 236, height: 136 })),
-        edges: projection.edges.map((edge) => ({
-          id: edge.id,
-          sources: [edge.source],
-          targets: [edge.target],
-        })),
-      });
-      clearTimeout(timer);
-      worker.terminate();
+      const result = await engine.layout(
+        signature,
+        next.map((n) => n.id),
+        projection.edges,
+        v.direction,
+      );
       if (!disposed) {
-        const positions = new Map(
-          graph.children?.map((node) => [
-            node.id,
-            { x: node.x ?? 0, y: node.y ?? 0 },
-          ]),
-        );
+        const positions = result.positions;
         const arranged = next.map((node) => ({
           ...node,
-          position: positions.get(node.id)!,
+          position: positions[node.id]!,
+          selected: node.id === selectedRef.current,
         }));
         setNodes(arranged);
         setRenderedVersion(model.version);
@@ -175,6 +151,14 @@ function Workspace({ bridge }: { bridge: Bridge }) {
         requestAnimationFrame(() =>
           requestAnimationFrame(() => {
             if (disposed) return;
+            const intentChanged =
+              viewportIntent.current.focus !== v.focusId ||
+              viewportIntent.current.direction !== v.direction;
+            viewportIntent.current = {
+              focus: v.focusId,
+              direction: v.direction,
+            };
+            if (result.cached && !firstLayout.current && !intentChanged) return;
             const selected = arranged.find(
               (node) => node.id === selectedRef.current,
             );
@@ -220,12 +204,12 @@ function Workspace({ bridge }: { bridge: Bridge }) {
     });
     return () => {
       disposed = true;
-      clearTimeout(timer);
-      worker?.terminate();
-      if (objectUrl) URL.revokeObjectURL(objectUrl);
+      engine.cancel();
     };
   }, [
     projection,
+    layoutAttempt,
+    engine,
     v.model,
     v.direction,
     v.pages,
@@ -251,6 +235,15 @@ function Workspace({ bridge }: { bridge: Bridge }) {
   }, [v.selected, flow]);
 
   const selectedNode = v.model?.nodes[v.selected ?? ""];
+  const ancestors = [];
+  for (
+    let node = selectedNode;
+    node;
+    node = node.parentId ? v.model?.nodes[node.parentId] : undefined
+  )
+    ancestors.unshift(node);
+  const breadcrumbs =
+    ancestors.length > 6 ? [ancestors[0]!, ...ancestors.slice(-5)] : ancestors;
   const valid = Boolean(v.model && !v.loading && !v.issue);
   const fileName = v.model
     ? decodeURIComponent(v.model.uri.split("/").at(-1) ?? "XML document")
@@ -296,6 +289,42 @@ function Workspace({ bridge }: { bridge: Bridge }) {
         inspectorOpen={inspectorOpen}
         setInspectorOpen={setInspectorOpen}
       />
+      <nav className="breadcrumbs" aria-label="XML navigation">
+        <button
+          aria-label="Back to previous node"
+          disabled={!valid || v.history.index <= 0}
+          onClick={() => v.navigateHistory(-1)}
+        >
+          ←
+        </button>
+        <button
+          aria-label="Forward to next node"
+          disabled={!valid || v.history.index >= v.history.ids.length - 1}
+          onClick={() => v.navigateHistory(1)}
+        >
+          →
+        </button>
+        {breadcrumbs.map((node) => (
+          <button
+            key={node.id}
+            disabled={!valid}
+            title={node.path.slice(0, 4096)}
+            aria-current={node.id === v.selected ? "location" : undefined}
+            onClick={() => v.select(node.id, true)}
+          >
+            {node.kind === "document" ? "Document" : node.name.slice(0, 160)}
+          </button>
+        ))}
+        {!selectedNode && <span>Select a node to explore its location</span>}
+        {valid && (
+          <button
+            className="pause-preview"
+            onClick={() => bridge.post({ type: "cancel" })}
+          >
+            Pause preview
+          </button>
+        )}
+      </nav>
       {v.issue && (
         <div className="issue-banner" role="alert">
           <div>
@@ -308,6 +337,12 @@ function Workspace({ bridge }: { bridge: Bridge }) {
             </strong>
             <span>{v.issue.message}</span>
           </div>
+          <div className="issue-actions">
+            <button onClick={v.retry}>Retry</button>
+            {["syntax", "namespace"].includes(v.issue.code) && (
+              <button onClick={v.showError}>Show error in source</button>
+            )}
+          </div>
           <small>
             Line {v.issue.line}, column {v.issue.column}
             {v.model
@@ -319,6 +354,9 @@ function Workspace({ bridge }: { bridge: Bridge }) {
       {layoutError && (
         <div className="issue-banner" role="alert">
           {layoutError}
+          <button onClick={() => setLayoutAttempt((attempt) => attempt + 1)}>
+            Retry layout
+          </button>
         </div>
       )}
       <div
@@ -340,14 +378,15 @@ function Workspace({ bridge }: { bridge: Bridge }) {
           )}
           {projection?.limited && (
             <div className="budget-banner" role="status">
-              Showing the first 1,000 nodes. Collapse a branch or select a node
-              and choose Focus branch.
+              Showing the first {v.settings.maxVisibleNodes.toLocaleString()}{" "}
+              nodes. Collapse a branch or select a node and choose Focus branch.
             </div>
           )}
           {v.model ? (
             <ReactFlow<XmlFlowNode>
               inert={
                 v.loading ||
+                Boolean(v.issue) ||
                 layoutBusy ||
                 Boolean(layoutError) ||
                 renderedVersion !== v.model.version
@@ -422,6 +461,9 @@ function Workspace({ bridge }: { bridge: Bridge }) {
               role="separator"
               aria-label="Resize details"
               aria-orientation="vertical"
+              aria-valuenow={v.inspectorWidth}
+              aria-valuemin={240}
+              aria-valuemax={520}
               tabIndex={0}
               onPointerDown={resize}
               onKeyDown={(event) => {
@@ -433,6 +475,7 @@ function Workspace({ bridge }: { bridge: Bridge }) {
             />
             <Inspector
               node={selectedNode}
+              path={selectedNode.path}
               details={v.details}
               bridge={bridge}
               enabled={

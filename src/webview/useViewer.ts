@@ -1,9 +1,20 @@
+import { DEFAULT_SETTINGS } from "../shared/settings";
+import { decodeModel } from "../shared/model-codec";
+import { saveView, restoreView } from "../core/view-state";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { initialExpanded, projectGraph, revealNode } from "../core/graph";
 import type { XmlIssue, XmlModel } from "../core/model";
 import type { Bridge, HostMessage, ViewState } from "../shared/protocol";
 export type Details = Extract<HostMessage, { type: "details" }>;
 export function useViewer(bridge: Bridge) {
+  const [settings, setSettings] = useState(DEFAULT_SETTINGS);
+  const settingsRef = useRef(DEFAULT_SETTINGS);
+  const [history, setHistory] = useState<{ ids: string[]; index: number }>({
+    ids: [],
+    index: -1,
+  });
+  const historyRef = useRef(history);
+  historyRef.current = history;
   const saved = useRef(bridge.getState());
   const [model, setModel] = useState<XmlModel>();
   const [loading, setLoading] = useState(true);
@@ -15,6 +26,7 @@ export function useViewer(bridge: Bridge) {
   const [focusId, setFocusId] = useState<string>();
   const [query, setQuery] = useState("");
   const [matches, setMatches] = useState<string[]>([]);
+  const [contexts, setContexts] = useState<Record<string, string>>({});
   const [matchIndex, setMatchIndex] = useState(0);
   const [direction, setDirection] = useState<"RIGHT" | "DOWN">(
     saved.current.direction ?? "RIGHT",
@@ -28,40 +40,87 @@ export function useViewer(bridge: Bridge) {
   const [inspectorWidth, setInspectorWidth] = useState(
     saved.current.inspectorWidth ?? 312,
   );
-  const current = useRef({ model, expanded, pages, query, loading, issue });
-  current.current = { model, expanded, pages, query, loading, issue };
+  const current = useRef({
+    model,
+    expanded,
+    pages,
+    query,
+    loading,
+    issue,
+    selected,
+    focusId,
+    details,
+  });
+  current.current = {
+    model,
+    expanded,
+    pages,
+    query,
+    loading,
+    issue,
+    selected,
+    focusId,
+    details,
+  };
   const version = useRef(-1),
     searchId = useRef(0);
   const requestedDetails = useRef<string | undefined>(undefined);
+  const lastSearchQuery = useRef("");
+  const autoSelectSearch = useRef(true);
 
   const select = useCallback(
-    (id: string, reveal = false) => {
+    (id: string, reveal = false, record = true) => {
       const state = current.current;
       if (!state.model) return;
       let target = id;
       if (reveal) {
         const next = revealNode(state.model, id, state.expanded, state.pages);
         target = next.id;
-        setExpanded(next.expanded);
-        setPages(next.pages);
-        setFocusId(undefined);
+        if (next.expanded !== state.expanded) setExpanded(next.expanded);
+        if (next.pages !== state.pages) setPages(next.pages);
+        let ancestor = state.model.nodes[target];
+        while (ancestor?.parentId && ancestor.id !== state.focusId)
+          ancestor = state.model.nodes[ancestor.parentId];
+        if (state.focusId && ancestor?.id !== state.focusId)
+          setFocusId(undefined);
         const node = state.model.nodes[target];
         if (node && ["comment", "pi", "xmldecl"].includes(node.kind))
           setShowMetadata(true);
         if (node?.kind === "text" && !node.value.trim())
           setShowWhitespace(true);
-        const projection = projectGraph(state.model, {
-          expanded: next.expanded,
-          pages: next.pages,
-          showMetadata: true,
-          showWhitespace: true,
-        });
-        if (!projection.nodes.some((n) => n.id === target))
-          setFocusId(node?.parentId ?? target);
+        const projection =
+          next.expanded === state.expanded && next.pages === state.pages
+            ? undefined
+            : projectGraph(state.model, {
+                expanded: next.expanded,
+                pages: next.pages,
+                showMetadata: true,
+                showWhitespace: true,
+                maxVisible: settingsRef.current.maxVisibleNodes,
+              });
+        if (projection && !projection.nodes.some((n) => n.id === target))
+          setFocusId(target);
+      }
+      if (
+        record &&
+        historyRef.current.ids[historyRef.current.index] !== target
+      ) {
+        const ids = [
+          ...historyRef.current.ids.slice(0, historyRef.current.index + 1),
+          target,
+        ].slice(-32);
+        const next = { ids, index: ids.length - 1 };
+        historyRef.current = next;
+        setHistory(next);
       }
       setSelected(target);
       requestedDetails.current = target;
-      if (!state.loading && !state.issue)
+      if (
+        !state.loading &&
+        !state.issue &&
+        (state.details?.node.id !== target ||
+          state.details?.version !== state.model.version)
+      )
         bridge.post({
           type: "details",
           version: state.model.version,
@@ -73,44 +132,65 @@ export function useViewer(bridge: Bridge) {
 
   useEffect(() => {
     const unsubscribe = bridge.subscribe((message) => {
+      if (message.type === "settings") {
+        settingsRef.current = message.settings;
+        setSettings(message.settings);
+        if (message.changed || saved.current.direction === undefined)
+          setDirection(message.settings.direction);
+        if (message.changed || saved.current.showMetadata === undefined)
+          setShowMetadata(message.settings.showMetadata);
+        if (message.changed || saved.current.showWhitespace === undefined)
+          setShowWhitespace(message.settings.showWhitespace);
+        return;
+      }
       if (message.type === "model") {
-        if (message.model.version < version.current) return;
-        version.current = message.model.version;
+        const nextModel = decodeModel(message.model);
+        if (nextModel.version < version.current) return;
+        version.current = nextModel.version;
         const previous = current.current;
-        const pathSet =
-          previous.model?.uri === message.model.uri
-            ? new Set(
-                [...previous.expanded].map(
-                  (id) => previous.model!.nodes[id]?.path,
-                ),
-              )
-            : saved.current.uri === message.model.uri
-              ? new Set(saved.current.expandedPaths ?? [])
+        const stored =
+          previous.model?.uri === nextModel.uri
+            ? saveView(previous.model, previous)
+            : saved.current.uri === nextModel.uri
+              ? saved.current.view
               : undefined;
-        const nextExpanded = pathSet?.size
-          ? new Set(
-              Object.values(message.model.nodes)
-                .filter((n) => pathSet.has(n.path))
-                .map((n) => n.id),
-            )
-          : initialExpanded(message.model);
+        const restored = stored ? restoreView(nextModel, stored) : undefined;
+        const nextExpanded =
+          restored?.expanded ??
+          initialExpanded(nextModel, settingsRef.current.initialDepth);
         current.current = {
           ...previous,
-          model: message.model,
+          model: nextModel,
           expanded: nextExpanded,
-          pages: {},
+          pages: restored?.pages ?? {},
+          selected: restored?.selected,
+          focusId: restored?.focusId,
+          details: undefined,
           loading: false,
           issue: undefined,
         };
-        setModel(message.model);
+        const nextHistory = {
+          ids: restored?.selected ? [restored.selected] : [],
+          index: restored?.selected ? 0 : -1,
+        };
+        historyRef.current = nextHistory;
+        setHistory(nextHistory);
+        setModel(nextModel);
         setExpanded(nextExpanded);
-        setPages({});
+        setPages(restored?.pages ?? {});
         setLoading(false);
         setIssue(undefined);
-        setSelected(undefined);
+        setSelected(restored?.selected);
         setDetails(undefined);
-        setFocusId(undefined);
+        setFocusId(restored?.focusId);
         setMatches([]);
+        requestedDetails.current = restored?.selected;
+        if (restored?.selected)
+          bridge.post({
+            type: "details",
+            version: nextModel.version,
+            nodeId: restored.selected,
+          });
         return;
       }
       if ("version" in message && message.version < version.current) return;
@@ -145,8 +225,16 @@ export function useViewer(bridge: Bridge) {
         message.query === current.current.query
       ) {
         setMatches(message.ids);
-        setMatchIndex(0);
-        if (message.ids[0]) select(message.ids[0], true);
+        setContexts(message.contexts ?? {});
+        const index = message.ids.findIndex(
+          (id) =>
+            id === current.current.selected ||
+            current.current.model?.nodes[id]?.parentId ===
+              current.current.selected,
+        );
+        setMatchIndex(autoSelectSearch.current ? 0 : Math.max(0, index));
+        if (message.ids[0] && autoSelectSearch.current)
+          select(message.ids[0], true);
       }
     });
     bridge.post({ type: "ready" });
@@ -155,6 +243,9 @@ export function useViewer(bridge: Bridge) {
 
   useEffect(() => {
     const requestId = ++searchId.current;
+    autoSelectSearch.current =
+      lastSearchQuery.current !== query || !current.current.selected;
+    lastSearchQuery.current = query;
     if (!model || loading || issue || !query.trim()) {
       setMatches([]);
       return;
@@ -176,11 +267,9 @@ export function useViewer(bridge: Bridge) {
     const state: ViewState = {
       ...bridge.getState(),
       uri: model?.uri,
-      expandedPaths: model
-        ? [...expanded]
-            .map((id) => model.nodes[id]?.path)
-            .filter((path): path is string => Boolean(path))
-        : [],
+      view: model
+        ? saveView(model, { selected, focusId, expanded, pages })
+        : undefined,
       direction,
       showMetadata,
       showWhitespace,
@@ -194,6 +283,9 @@ export function useViewer(bridge: Bridge) {
     showMetadata,
     showWhitespace,
     inspectorWidth,
+    selected,
+    focusId,
+    pages,
     bridge,
   ]);
 
@@ -205,6 +297,20 @@ export function useViewer(bridge: Bridge) {
   };
   return {
     model,
+    settings,
+    history,
+    navigateHistory(step: number) {
+      const index = history.index + step;
+      const id = history.ids[index];
+      if (!id) return;
+      const next = { ...history, index };
+      historyRef.current = next;
+      setHistory(next);
+      select(id, true, false);
+    },
+    retry: () => bridge.post({ type: "retry" }),
+    showError: () =>
+      bridge.post({ type: "showError", version: version.current }),
     loading,
     issue,
     expanded,
@@ -220,6 +326,7 @@ export function useViewer(bridge: Bridge) {
     setQuery,
     matches,
     matchIndex,
+    matchContext: contexts[matches[matchIndex] ?? ""],
     navigateMatch,
     direction,
     setDirection,

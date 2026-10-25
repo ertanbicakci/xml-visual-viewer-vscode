@@ -23,6 +23,9 @@ export interface XmlNode {
   localName: string;
   namespaceUri: string;
   path: string;
+  siblingIndex: number;
+  fingerprint: string;
+  nameKey: string;
   depth: number;
   children: string[];
   attributes: XmlAttribute[];
@@ -41,7 +44,14 @@ export interface XmlModel {
   byteLength: number;
 }
 export interface XmlIssue {
-  code: "empty" | "syntax" | "namespace" | "unsupported" | "limit" | "internal";
+  code:
+    | "empty"
+    | "syntax"
+    | "namespace"
+    | "unsupported"
+    | "limit"
+    | "internal"
+    | "cancelled";
   message: string;
   offset: number;
   line: number;
@@ -53,9 +63,13 @@ export interface ParseLimits {
   maxBytes: number;
   maxNodes: number;
   maxDepth: number;
+  maxAttributes: number;
+  maxModelBytes: number;
 }
 export const DEFAULT_LIMITS: ParseLimits = {
   maxBytes: 10 * 1024 * 1024,
   maxNodes: 50_000,
   maxDepth: 256,
+  maxAttributes: 50_000,
+  maxModelBytes: 32 * 1024 * 1024,
 };

@@ -1,3 +1,5 @@
+import { mkdir, writeFile } from "node:fs/promises";
+import { cpus, platform, arch } from "node:os";
 import * as vscode from "vscode";
 import * as assert from "node:assert/strict";
 import { chromium, expect } from "@playwright/test";
@@ -22,6 +24,7 @@ export async function run() {
   const doc = await vscode.workspace.openTextDocument(sourceUri);
   await vscode.window.showTextDocument(doc, vscode.ViewColumn.One);
   const before = doc.getText();
+  const openStarted = Date.now();
   await vscode.commands.executeCommand("xmlViewer.openPreview", sourceUri);
   const previews = () =>
     vscode.window.tabGroups.all
@@ -62,7 +65,47 @@ export async function run() {
       { timeout: 15_000 },
     )
     .toBe(true);
-  await expect(frame.locator(".react-flow__node")).not.toHaveCount(0);
+  await expect(
+    frame.locator(".react-flow:not([inert]) .react-flow__node"),
+  ).not.toHaveCount(0);
+  await frame.evaluate(
+    () =>
+      new Promise((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(resolve)),
+      ),
+  );
+  const openingMs = Date.now() - openStarted;
+  await mkdir(vscode.Uri.joinPath(extension.extensionUri, "artifacts").fsPath, {
+    recursive: true,
+  });
+  const reportPath = vscode.Uri.joinPath(
+    extension.extensionUri,
+    "artifacts",
+    `extension-performance-${vscode.version}.json`,
+  ).fsPath;
+  const performanceReport = {
+    measuredAt: new Date().toISOString(),
+    vscode: vscode.version,
+    os: platform() + " " + arch(),
+    cpu: cpus()[0]?.model,
+    samples: 1,
+    openingMs,
+    scope:
+      "Actual VS Code command invocation to interactive graph and two animation frames. Includes parser worker, IPC, Webview setup, ELK and rendering. Extension activation and VS Code startup precede measurement. Source update includes configured 400ms debounce. One sample per document, not p95.",
+    large: undefined as
+      | {
+          bytes: number;
+          nodes: number;
+          openingMs: number;
+          searchMs: number;
+          updateMs: number;
+        }
+      | undefined,
+  };
+  await writeFile(
+    reportPath,
+    JSON.stringify(performanceReport, null, 2) + "\n",
+  );
   await frame
     .getByRole("searchbox", { name: "Search XML" })
     .fill("The Namespace Handbook");
@@ -92,6 +135,31 @@ export async function run() {
     doc.isDirty,
     false,
     "Graph and source navigation must remain read-only",
+  );
+  const config = vscode.workspace.getConfiguration("xmlViewer", doc.uri);
+  await config.update("followSource", false, vscode.ConfigurationTarget.Global);
+  const titleCursor = doc.positionAt(doc.getText().indexOf("<title>") + 2);
+  sourceEditor.selection = new vscode.Selection(titleCursor, titleCursor);
+  await new Promise((resolve) => setTimeout(resolve, 250));
+  await expect(
+    frame
+      .getByTestId("node-inspector")
+      .getByRole("heading", { name: "notifications", exact: true }),
+  ).toBeVisible();
+  await config.update(
+    "followSource",
+    undefined,
+    vscode.ConfigurationTarget.Global,
+  );
+  await config.update("direction", "DOWN", vscode.ConfigurationTarget.Global);
+  await expect(frame.locator(".viewer")).toHaveAttribute(
+    "data-direction",
+    "DOWN",
+  );
+  await config.update(
+    "direction",
+    undefined,
+    vscode.ConfigurationTarget.Global,
   );
   const edit = new vscode.WorkspaceEdit();
   edit.insert(
@@ -143,9 +211,180 @@ export async function run() {
           (tab.input as vscode.TabInputCustom).uri.toString() === sameUri,
       ).length >= 2,
   );
+  // Both previews of the same document must remain independent.
+  await vscode.commands.executeCommand(
+    "vscode.openWith",
+    sourceUri,
+    "xmlViewer.preview",
+    { viewColumn: vscode.ViewColumn.Two },
+  );
+  let sameFrames: (typeof frame)[] = [];
+  await expect
+    .poll(async () => {
+      sameFrames = [];
+      for (const candidate of workbench.frames()) {
+        if (
+          (await candidate
+            .locator(".file-name")
+            .textContent({ timeout: 200 })
+            .catch(() => "")) === "catalog.xml"
+        )
+          sameFrames.push(candidate);
+      }
+      return sameFrames.length;
+    })
+    .toBe(2);
+  const paused = sameFrames[0]!,
+    active = sameFrames[1]!;
+  await paused
+    .getByRole("button", { name: "Pause preview", exact: true })
+    .click();
+  await expect(paused.getByRole("alert")).toContainText("paused");
+  const change = new vscode.WorkspaceEdit();
+  change.insert(
+    doc.uri,
+    new vscode.Position(2, 0),
+    "<!-- Independent panel test -->\n",
+  );
+  await vscode.workspace.applyEdit(change);
+  await expect(active.locator(".viewer")).toHaveAttribute(
+    "data-document-version",
+    String(doc.version),
+  );
+  await expect(active.locator(".viewer")).toHaveAttribute(
+    "data-state",
+    "ready",
+  );
+  await expect(paused.getByRole("alert")).toContainText("paused");
+  await paused.getByRole("button", { name: "Retry", exact: true }).click();
+  await expect(paused.locator(".viewer")).toHaveAttribute(
+    "data-document-version",
+    String(doc.version),
+  );
+  await expect(paused.locator(".viewer")).toHaveAttribute(
+    "data-state",
+    "ready",
+  );
+  const validText = doc.getText();
+  const broken = new vscode.WorkspaceEdit();
+  broken.replace(
+    doc.uri,
+    new vscode.Range(doc.positionAt(0), doc.positionAt(validText.length)),
+    "<broken>",
+  );
+  await vscode.workspace.applyEdit(broken);
+  await expect(paused.getByRole("alert")).toContainText("Missing end tag");
+  await waitFor(() =>
+    vscode.languages
+      .getDiagnostics(doc.uri)
+      .some((d) => d.source === "XML Viewer"),
+  );
+  await paused.getByRole("button", { name: "Show error in source" }).click();
+  await waitFor(() => vscode.window.activeTextEditor?.document === doc);
+  const clipboard = await vscode.env.clipboard.readText();
+  try {
+    await vscode.commands.executeCommand("xmlViewer.copyDiagnostics");
+    const report = await vscode.env.clipboard.readText();
+    assert.ok(report.includes("syntax"));
+    assert.ok(!report.includes("broken") && !report.includes(sourceUri.fsPath));
+  } finally {
+    await vscode.env.clipboard.writeText(clipboard);
+  }
+  const fix = new vscode.WorkspaceEdit();
+  fix.replace(
+    doc.uri,
+    new vscode.Range(doc.positionAt(0), doc.positionAt(doc.getText().length)),
+    before,
+  );
+  await vscode.workspace.applyEdit(fix);
+  await waitFor(
+    () =>
+      !vscode.languages
+        .getDiagnostics(doc.uri)
+        .some((d) => d.source === "XML Viewer"),
+  );
+  assert.equal(doc.getText(), before, "Integration fixtures must be restored");
+  await vscode.window.tabGroups.close(previews());
+  const largeSource =
+    "<catalog>" +
+    Array.from(
+      { length: 16000 },
+      (_, i) =>
+        `<item id="row-${i}"><name>${"XML visualization ".repeat(10)}${i}</name></item>`,
+    ).join("") +
+    "</catalog>";
+  const largeDoc = await vscode.workspace.openTextDocument({
+    language: "xml",
+    content: largeSource,
+  });
+  await vscode.window.showTextDocument(largeDoc, vscode.ViewColumn.One);
+  let start = Date.now();
+  await vscode.commands.executeCommand("xmlViewer.openPreview");
+  let largeFrame = workbench.mainFrame();
+  await expect
+    .poll(
+      async () => {
+        for (const candidate of workbench.frames())
+          if (await candidate.locator(".viewer").count()) {
+            largeFrame = candidate;
+            return true;
+          }
+        return false;
+      },
+      { timeout: 15000 },
+    )
+    .toBe(true);
+  await expect(
+    largeFrame.locator(".react-flow:not([inert]) .react-flow__node"),
+  ).not.toHaveCount(0, { timeout: 15000 });
+  const paint = () =>
+    largeFrame.evaluate(
+      () =>
+        new Promise((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(resolve)),
+        ),
+    );
+  await paint();
+  const largeOpeningMs = Date.now() - start;
+  start = Date.now();
+  await largeFrame.getByRole("searchbox").fill("row-15999");
+  await expect(largeFrame.locator(".react-flow__node.selected")).toContainText(
+    "row-15999",
+  );
+  await expect(
+    largeFrame.getByRole("button", { name: "Show in source", exact: true }),
+  ).toBeEnabled();
+  await paint();
+  const searchMs = Date.now() - start;
+  start = Date.now();
+  const largeEdit = new vscode.WorkspaceEdit();
+  largeEdit.insert(largeDoc.uri, largeDoc.positionAt(8), ' updated="true"');
+  await vscode.workspace.applyEdit(largeEdit);
+  await expect(largeFrame.locator(".viewer")).toHaveAttribute(
+    "data-document-version",
+    String(largeDoc.version),
+    { timeout: 15000 },
+  );
+  await expect(largeFrame.locator(".react-flow")).not.toHaveAttribute(
+    "inert",
+    "",
+  );
+  await paint();
+  const updateMs = Date.now() - start;
+  performanceReport.large = {
+    bytes: new TextEncoder().encode(largeSource).byteLength,
+    nodes: 48002,
+    openingMs: largeOpeningMs,
+    searchMs,
+    updateMs,
+  };
+  await writeFile(
+    reportPath,
+    JSON.stringify(performanceReport, null, 2) + "\n",
+  );
   await vscode.window.tabGroups.close(previews());
   await browser.close();
   console.log(
-    "XML Viewer: Extension Host integration checks passed (actual Webview rendering, graph↔source navigation, live search, read-only, untitled, multiple views, cleanup).",
+    "XML Viewer: Extension Host integration checks passed (actual Webview rendering, graph↔source navigation, live search, settings, diagnostics, read-only, untitled, independent cancellation/retry, cleanup).",
   );
 }

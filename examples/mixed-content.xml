@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?example inspect="metadata"?>
+<article xmlns="urn:example:article" xml:lang="tr">
+  <title>XML, metin ve karakterler</title>
+  <p>Önce metin, <em>vurgulu bir bölüm</em>, sonra <link href="https://example.invalid/">bir bağlantı</link> ve son metin.</p>
+  <code><![CDATA[<script>this is text, never executed</script>]]></code>
+  <pre xml:space="preserve">  indentation
+    remains meaningful
+  </pre>
+  <!-- Arama bu yorumu kapalıyken de bulur. -->
+  <labels><label xml:lang="tr">İstanbul 🧿</label><label xml:lang="ja">東京</label><label xml:lang="ar">مرحبا</label></labels>
+</article>

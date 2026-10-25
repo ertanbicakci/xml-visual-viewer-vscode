@@ -21,7 +21,19 @@ Amaç: JSON Crack benzeri görsel keşif sunan, XML semantiğini koruyan bir VS 
 ## Yayın öncesi kalan dış ortam kontrolleri
 - Windows ve Linux üzerinde CI senaryolarının çalıştırılması.
 - Marketplace publisher kimliği, ad uygunluğu ve yayın kararı.
-- Tam açılış/çizim performansının hedef cihaz profillerinde ölçülmesi; mevcut benchmark yalnızca parser/model kapsamındadır.
+- UI ve gerçek Extension Host ölçümleri eklendi. Farklı hedef donanımlarda yeterli örnek sayısıyla p95 kabulü yayın öncesi kalır.
+
+## Ürünleştirme — kullanıcı onayladı
+- [x] İmleç seçiminde gereksiz layout'u kaldır; worker kaynağını/yerleşimleri tekrar kullan.
+- [x] Model ve aktarım boyutlarını sınırla; tekrarlanan metinleri ortak tabloda taşı.
+- [x] Güvenilir düğüm eşlemesiyle seçim, odak ve sayfalama durumunu koru.
+- [x] Yeniden dene, panele özgü iptal, hata konumuna gitme ve içeriksiz tanılama ekle.
+- [x] VS Code ayarları, breadcrumb, seçim geçmişi ve arama bağlamı ekle.
+- [x] Tema/erişilebilirlik ve gerçek kullanıcı örneklerini test et; uçtan uca performans ölç.
+- [x] Minimum VS Code sürümünü çalıştır; platform/sürüm CI ve sürüm paketleme akışını tamamla.
+- [x] Git geçmişi, ürün görselleri, güncel README, beta VSIX ve yayın kontrol listesi oluştur.
+
+Kullanıcı publisher / uzak repo bilgisinin henüz olmadığını ve yayın öncesinde sağlayacağını bildirdi. Yerel beta tamamlanır; dış yayın yapılmaz. Gerçek platform CI ve kullanıcı beta geri bildirimi açık dış kontrollerdir.
 
 ## Sınırlar
 - Uygulama yetkisi verildi; Marketplace yayını bu görevin kapsamında değil.
