@@ -1,0 +1,111 @@
+{
+  "name": "xml-visual-viewer",
+  "displayName": "XML Viewer",
+  "description": "Explore XML as an interactive graph, with namespaces, search and source navigation.",
+  "version": "0.1.0",
+  "publisher": "local",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.96.0"
+  },
+  "categories": [
+    "Visualization",
+    "Other"
+  ],
+  "keywords": [
+    "xml",
+    "graph",
+    "visualizer",
+    "viewer",
+    "namespace"
+  ],
+  "main": "./dist/extension.cjs",
+  "extensionKind": [
+    "workspace"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": true
+    },
+    "virtualWorkspaces": {
+      "supported": true
+    }
+  },
+  "contributes": {
+    "commands": [
+      {
+        "command": "xmlViewer.openPreview",
+        "title": "Open Visual Preview",
+        "category": "XML Viewer"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "xmlViewer.openPreview",
+          "when": "resourceLangId == xml",
+          "group": "navigation"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "xmlViewer.openPreview",
+          "when": "resourceExtname == .xml",
+          "group": "navigation"
+        }
+      ]
+    },
+    "customEditors": [
+      {
+        "viewType": "xmlViewer.preview",
+        "displayName": "XML Viewer",
+        "selector": [
+          {
+            "filenamePattern": "*.xml"
+          }
+        ],
+        "priority": "option"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "test:extension": "node scripts/test-extension.mjs",
+    "benchmark": "node scripts/benchmark.mjs",
+    "preview": "node scripts/preview.mjs",
+    "package": "vsce package --no-dependencies --allow-missing-repository",
+    "vscode:prepublish": "npm run check && npm run build && npm run notices",
+    "pretest": "node scripts/build.mjs",
+    "notices": "node scripts/notices.mjs",
+    "format": "prettier --write src tests scripts *.json *.ts .vscode"
+  },
+  "dependencies": {
+    "@rgrove/parse-xml": "^5.0.0",
+    "@xyflow/react": "^12.12.0",
+    "elkjs": "^0.12.0",
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "@types/node": "^26.6.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@types/vscode": "^1.96.0",
+    "@vscode/test-electron": "^3.1.0",
+    "@vscode/vsce": "^4.0.0",
+    "esbuild": "^0.28.2",
+    "prettier": "^3.9.10",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.12"
+  },
+  "overrides": {
+    "@azure/identity": "4.13.0",
+    "@azure/msal-node": {
+      "uuid": "^11.1.1"
+    }
+  }
+}

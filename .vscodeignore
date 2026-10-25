@@ -1,0 +1,12 @@
+**/*
+!package.json
+!README.md
+!LICENSE
+!CHANGELOG.md
+!THIRD_PARTY_NOTICES.txt
+!dist/extension.cjs
+!dist/parse-worker.cjs
+!dist/webview/app.js
+!dist/webview/app.css
+!dist/webview/layout-worker.js
+!examples/catalog.xml

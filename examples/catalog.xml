@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- A sample catalog. Open Visual Preview to explore. -->
+<catalog xmlns="urn:example:catalog" xmlns:meta="urn:example:metadata" version="1.0">
+  <collection name="Developer bookshelf" updated="2026-10-25">
+    <book id="bk-101" available="true">
+      <title>Understanding XML</title>
+      <author>Deniz Kaya</author>
+      <price currency="TRY">349.90</price>
+      <description>A practical guide to <emphasis>structured data</emphasis> and the web.</description>
+      <meta:tags>
+        <meta:tag>XML</meta:tag>
+        <meta:tag>Architecture</meta:tag>
+      </meta:tags>
+    </book>
+    <book id="bk-102" available="true">
+      <title>Designing Data Systems</title>
+      <author>Elif Yılmaz</author>
+      <price currency="TRY">429.00</price>
+      <description><![CDATA[From <elements> to useful information.]]></description>
+    </book>
+    <book id="bk-103" available="false">
+      <title>The Namespace Handbook</title>
+      <author>Can Arslan</author>
+      <price currency="TRY">279.50</price>
+      <meta:tags>
+        <meta:tag>Namespaces</meta:tag>
+      </meta:tags>
+    </book>
+  </collection>
+  <settings>
+    <language>tr-TR</language>
+    <timezone>Europe/Istanbul</timezone>
+    <notifications enabled="true"/>
+  </settings>
+</catalog>

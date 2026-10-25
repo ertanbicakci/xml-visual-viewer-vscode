@@ -1,0 +1,27 @@
+{
+  "measuredAt": "2026-10-25T11:05:31.465Z",
+  "node": "v25.2.0",
+  "os": "darwin 27.2.0 arm64",
+  "cpu": "Apple M3 Pro",
+  "scope": "Parser and model only. Does not include worker startup, IPC, graph layout or rendering.",
+  "results": [
+    {
+      "profile": "standard",
+      "bytes": 217799,
+      "nodes": 3002,
+      "elements": 2001,
+      "samples": 10,
+      "medianMs": 5.76,
+      "p95Ms": 10.29
+    },
+    {
+      "profile": "large",
+      "bytes": 3529799,
+      "nodes": 48002,
+      "elements": 32001,
+      "samples": 10,
+      "medianMs": 80.01,
+      "p95Ms": 179.6
+    }
+  ]
+}

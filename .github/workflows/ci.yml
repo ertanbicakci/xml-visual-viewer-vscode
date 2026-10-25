@@ -1,0 +1,30 @@
+name: Validate extension
+on: [push, pull_request]
+jobs:
+  validate:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+      - run: npm test
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - name: Extension Host (Linux)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a npm run test:extension
+      - name: Extension Host (macOS / Windows)
+        if: runner.os != 'Linux'
+        run: npm run test:extension
+      - run: npm run package
+      - uses: actions/upload-artifact@v4
+        with:
+          name: xml-viewer-${{ runner.os }}
+          path: '*.vsix'
