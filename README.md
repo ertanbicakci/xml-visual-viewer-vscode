@@ -4,6 +4,8 @@ Explore XML inside VS Code as an interactive graph. Inspect namespaces, attribut
 
 ![XML Viewer graph and inspector](docs/images/preview.png)
 
+Repository: [ertanbicakci/xml-visual-viewer-vscode](https://github.com/ertanbicakci/xml-visual-viewer-vscode). Bug reports: [GitHub Issues](https://github.com/ertanbicakci/xml-visual-viewer-vscode/issues). The repository is currently private.
+
 ## Try it
 
 1. Install the local `xml-visual-viewer-0.2.0.vsix` using **Extensions → … → Install from VSIX…**.
@@ -117,4 +119,4 @@ Local macOS tests cover VS Code 1.96.0 and 1.143.1, with unit tests, browser UI/
 
 CI defines Windows/Linux/macOS × minimum/stable VS Code. The **Package verified beta** workflow produces a VSIX artifact only after that matrix passes; it does not publish to Marketplace. `npm run package` checks the VSIX allowlist, required files and identity, and writes its SHA-256 report to `artifacts/package-report.json`.
 
-Before public release: register the publisher, create the repository and issue/support URLs, verify the extension name, run the remote matrix, test on representative machines and collect beta feedback. See [release readiness](docs/release-readiness.md) for the current evidence and remaining gates. XPath, schema validation, editing and export remain outside this beta's scope.
+Before public release: register the publisher, decide repository/public asset visibility, verify the extension name, run the remote matrix, test on representative machines and collect beta feedback. See [release readiness](docs/release-readiness.md) for the current evidence and remaining gates. XPath, schema validation, editing and export remain outside this beta's scope.

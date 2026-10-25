@@ -2,8 +2,8 @@
   "file": "xml-visual-viewer-0.2.0.vsix",
   "version": "0.2.0",
   "publisher": "local",
-  "bytes": 750503,
-  "sha256": "5b1cc1d90eb4c80390770285fff1c403b688a1c1b5d1d36c07f35b29b716f1f2",
+  "bytes": 750743,
+  "sha256": "eaca875a9989db112514ccacc969433df036da3908fc93e954fd63a3fd943c7e",
   "files": [
     "[Content_Types].xml",
     "extension.vsixmanifest",

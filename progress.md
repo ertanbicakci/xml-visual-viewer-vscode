@@ -35,3 +35,9 @@
 - Son büyük belge testleri her iki sürümde de geçti: 1.96.0 açılış 2.129 ms, stable 1.143.1 açılış 1.996 ms (tek örnek; p95 değil). Son bağımsız UI ölçümünde büyük profil açılış p95 891,7 ms; gerçek VS Code süresiyle karıştırılmıyor.
 - Son VSIX: `xml-visual-viewer-0.2.0.vsix`, 18 dosya / 750.503 bayt. Kimlik/allowlist/SHA-256 doğrulaması ve ayrı VS Code profiline kurulum başarılı. Kullanıcının normal eklenti profili değiştirilmedi. Tam paket raporu docs/package-report.json içinde.
 - Yerel beta teslimi tamamlandı. Windows/Linux CI, manuel erişilebilirlik/uzak workspace beta testi, publisher/repo ve yayın kararı dış kontroller olarak açık bırakıldı.
+
+## 25 Ekim 2026 — GitHub deposu
+- Kullanıcı kayıtlı ertanbicakci hesabıyla yeni repo oluşturma ve push yetkisi verdi.
+- GitHub CLI oturumu ve hesap doğrulandı; `xml-visual-viewer-vscode` adlı private repo oluşturuldu.
+- Repository, homepage ve issues metadata'sı gerçek adreslerle güncellendi. Yerel beta README'si private repo görsellerine bağımlı değil.
+- Publisher kaydı ayrı bir Microsoft Marketplace kimliği gerektirir; GitHub oturumu publisher yerine geçmez. Publisher ID kaydedilmeden `local` kimliği değiştirilmeyecek.

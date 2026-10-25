@@ -1,6 +1,6 @@
 # XML Viewer 0.2.0 — yerel beta / yayın hazırlığı
 
-25 Ekim 2026. Kullanıcının onayladığı kapsam: XML dosyasını değiştirmeden görsel inceleme. Yerel geliştirme ve beta paketi tamamlanır; Marketplace yayını ayrı bir adımdır. Publisher ve uzak depo henüz yok; kullanıcı yayın öncesinde sağlayacak.
+25 Ekim 2026. Kullanıcının onayladığı kapsam: XML dosyasını değiştirmeden görsel inceleme. Yerel geliştirme ve beta paketi tamamlanır; Marketplace yayını ayrı bir adımdır. Publisher henüz kayıtlı değil. Kullanıcının onayıyla `ertanbicakci/xml-visual-viewer-vscode` GitHub deposu private oluşturuldu; repository/homepage/issues alanları güncellendi.
 
 ## Tamamlanan ürünleştirme
 
@@ -29,7 +29,7 @@
 | Güncel kararlı VS Code 1.143.1, macOS arm64 | Aynı entegrasyon paketi çalıştırıldı; sürüme ait ölçüm raporu ayrı tutulur |
 | Yerel kurulu VS Code 1.141.0 | Temel/genişletilmiş entegrasyon başarılı; büyük belge ölçümü bu sürümde ayrıca alınmadı |
 | Bağımlılıklar | npm audit: bilinen açık yok |
-| VSIX | 18 dosya / 750.503 bayt. Kimlik, tam dosya allowlist'i ve SHA-256 `docs/package-report.json` içinde; ayrı VS Code test profiline kurulum başarılı; geliştirici kaynakları, testler ve bağımlılık klasörleri dahil değil |
+| VSIX | 18 dosya / 750.743 bayt. Kimlik, tam dosya allowlist'i ve SHA-256 `docs/package-report.json` içinde; ayrı VS Code test profiline kurulum başarılı; geliştirici kaynakları, testler ve bağımlılık klasörleri dahil değil |
 
 Performans raporları:
 
@@ -48,13 +48,13 @@ Gerçek Extension Host büyük belge ölçümleri (tek örnek; milisaniye):
 
 ## Yayından önce kalanlar
 
-1. **Publisher ve depo:** Marketplace publisher kaydı, benzersiz ad kontrolü, GitHub repo, `repository`, `homepage`, `bugs` ve destek/geri bildirim adresleri. Henüz tanımlanmadı; hayali kimlik veya URL kullanılmadı.
+1. **Publisher ve görünürlük:** Marketplace publisher kaydı ve benzersiz ad kontrolü bekliyor. GitHub repo ve `repository` / `homepage` / `bugs` adresleri hazır: https://github.com/ertanbicakci/xml-visual-viewer-vscode . Depo private; Marketplace görselleri için erişilebilir HTTPS barındırma veya deponun public yapılması ayrıca kararlaştırılmalı.
 2. **Uzak CI:** depo oluşturulunca altı platform/sürüm kombinasyonunu gerçekten çalıştır. Workflow tanımlanmış olması Windows/Linux başarısı anlamına gelmez.
 3. **Kullanıcı beta testi:** gerçek SOAP/konfigürasyon dosyaları, düşük/orta donanım, büyük namespace/attribute yapıları, dosya kodlamaları ve uzaktan workspace senaryoları.
 4. **Manuel erişilebilirlik:** ekran okuyucu, %200 yazı büyütme ve Windows forced-colors/işletim sistemi yüksek kontrast modu.
 5. **Performans kabulü:** standart hedef profilinde yeterli gerçek VS Code örneğiyle p95; hedef donanım, Remote SSH/Containers ve bellek ölçümü. Mevcut tek Extension Host ölçümü bu kabulü tek başına kanıtlamaz.
 6. **Yayın kararı:** beta geri bildirimlerini ele al, sürüm/lisans/görselleri gözden geçir ve doğrulanmış VSIX üzerinden yayınla. Bu görevde dışarıya yayın yapılmadı.
 
-Publisher `local` yerel geliştirme kimliğidir. Gerçek publisher'a geçince eklenti kimliği değişir; genel sürüm kurulurken yerel beta kaldırılmalıdır. Repo yokken paket README'si, bozuk göreli Marketplace bağlantıları üretmemek için `scripts/prepare-readme.mjs` ile metin olarak hazırlanır; kaynak README ve paket içindeki ekran görüntüsü korunur. `repository` tanımlandığında normal görsel/link işleme otomatik olarak devreye girer.
+Publisher `local` yerel geliştirme kimliğidir. Gerçek publisher'a geçince eklenti kimliği değişir; genel sürüm kurulurken yerel beta kaldırılmalıdır. `local` publisher ile beta paket README'si, bozuk göreli Marketplace bağlantıları üretmemek için `scripts/prepare-readme.mjs` ile metin olarak hazırlanır; kaynak README ve paket içindeki ekran görüntüsü korunur. Gerçek publisher ve herkese açık görsel adresleri hazır olduğunda normal görsel/link işleme devreye girer.
 
 XPath, XSD/DTD doğrulama, düzenleme ve dışa aktarma bu beta kapsamında değildir; ilk sürümü yayınlamak için zorunlu eksik olarak sayılmaz.

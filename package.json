@@ -138,7 +138,7 @@
     "test:extension": "node scripts/test-extension.mjs",
     "benchmark": "node scripts/benchmark.mjs",
     "preview": "node scripts/preview.mjs",
-    "package": "vsce package --no-dependencies --allow-missing-repository --readme-path artifacts/package-readme.md",
+    "package": "vsce package --no-dependencies --readme-path artifacts/package-readme.md",
     "vscode:prepublish": "npm run check && npm run build && npm run notices && node scripts/prepare-readme.mjs",
     "pretest": "node scripts/build.mjs",
     "notices": "node scripts/notices.mjs",
@@ -173,5 +173,13 @@
       "uuid": "^11.1.1"
     }
   },
-  "icon": "assets/icon.png"
+  "icon": "assets/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ertanbicakci/xml-visual-viewer-vscode.git"
+  },
+  "homepage": "https://github.com/ertanbicakci/xml-visual-viewer-vscode#readme",
+  "bugs": {
+    "url": "https://github.com/ertanbicakci/xml-visual-viewer-vscode/issues"
+  }
 }
