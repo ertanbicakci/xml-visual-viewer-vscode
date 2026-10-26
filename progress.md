@@ -41,3 +41,13 @@
 - GitHub CLI oturumu ve hesap doğrulandı; `xml-visual-viewer-vscode` adlı private repo oluşturuldu.
 - Repository, homepage ve issues metadata'sı gerçek adreslerle güncellendi. Yerel beta README'si private repo görsellerine bağımlı değil.
 - Publisher kaydı ayrı bir Microsoft Marketplace kimliği gerektirir; GitHub oturumu publisher yerine geçmez. Publisher ID kaydedilmeden `local` kimliği değiştirilmeyecek.
+
+## 26 Ekim 2026 — Yayın öncesi son teknik açıklar
+- İlk CI koşusunda Linux iki sürümde geçti; macOS/Windows Extension Host testleri başarısızdı.
+- Kısa ve her çalıştırmada benzersiz profil + dinamik CDP portu eklendi. macOS UNIX socket uzunluğu sorunu kapandı; sonraki koşuda iki macOS ve iki Linux senaryosu geçti.
+- Windows'ta ekran görüntüsü XML grafiğinin çalıştığını, CDP'nin önceden yüklenmiş iç frame'i atladığını gösterdi. CDP bağlantısı Webview oluşturulmadan önceye taşındı. Frame keşfi hatasını gizleyen skip veya güvenlik izolasyonunu devre dışı bırakan flag kullanılmadı.
+- Detay panelini klavyeyle kapatırken seçime odak dönmesi ve forced-colors sistem renkleri başarısız tarayıcı testleriyle doğrulanıp düzeltildi.
+- Gerçek VS Code içinde UTF-8/UTF-16 LE/BE BOM, salt okunur sanal FileSystemProvider ve kaynak offset'leri doğrulandı; beş standart panel açılışı ölçülüyor.
+- VSIX bağımsız bir test-driver ile kurularak hedefin checkout değil kurulum klasöründe olduğu doğrulanıyor. Publisher kimliği testlerde manifestten alınıyor.
+- Public görsel/link kullanımı publisher adına bağlanmıyor; açık repo erişimi ayrıca doğrulanana kadar paket README'si kendine yeterli metin olarak üretiliyor.
+- v0.2.1 için gerçek platform matrisi ve kurulu paket testleri tekrar çalıştırılıyor. İnsan kullanıcı, ekran okuyucu ve gerçek uzaktan bağlantı değerlendirmeleri otomatik testlerle yapılmış sayılmıyor.
