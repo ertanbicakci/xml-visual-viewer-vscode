@@ -1,60 +1,66 @@
-# XML Viewer 0.2.0 — yerel beta / yayın hazırlığı
+# XML Viewer 0.2.1 — yayın adayı
 
-25 Ekim 2026. Kullanıcının onayladığı kapsam: XML dosyasını değiştirmeden görsel inceleme. Yerel geliştirme ve beta paketi tamamlanır; Marketplace yayını ayrı bir adımdır. Publisher henüz kayıtlı değil. Kullanıcının onayıyla `ertanbicakci/xml-visual-viewer-vscode` GitHub deposu private oluşturuldu; repository/homepage/issues alanları güncellendi.
+26 Ekim 2026. Kapsam: XML dosyasını değiştirmeden görsel inceleme. Marketplace yayını ve publisher kaydı bu çalışmanın dışında; publisher henüz `local` geliştirme kimliği.
 
-## Tamamlanan ürünleştirme
+Depo: https://github.com/ertanbicakci/xml-visual-viewer-vscode . Kullanıcının açık bir public tercihi gelmediği için private durumu korunuyor. Paket README'si varsayılan olarak kendine yeterli metin kullanıyor; publisher adının değişmesi göreli görselleri kendiliğinden etkinleştirmiyor. Public repo erişimi doğrulanırsa `scripts/prepare-readme.mjs --public-repository` ile görseller/linkler vsce'nin normal dönüşümüne bırakılabilir.
 
-- [x] Aynı düğümde tekrarlanan kaynak seçimi yeni layout başlatmıyor. ELK kaynağı/worker ve sekiz topolojiye ait konumlar yeniden kullanılıyor.
-- [x] Tam düğüm yolları saklanmıyor; parent/kardeş indeksinden hesaplanıyor. Worker/Webview ortak string tablosu kullanıyor. 32 MiB serileştirilmiş model ve 50.000 attribute sınırı var. Worker V8 old-generation limiti 256 MiB; bu toplam süreç RAM garantisi değildir.
-- [x] Seçim, odak, açık dallar ve sayfalar namespace/ad, tekil `id` / `xml:id` ve içerik parmak iziyle yeniden eşleniyor. Belirsiz/tekrarlanan kimlikte seçim temizleniyor. Parmak izi kriptografik bir kimlik doğrulama mekanizması değildir.
-- [x] Her panel bağımsız duraklatılıp yeniden başlatılabiliyor. Son panel durduğunda iş iptal ediliyor; diğer aktif paneller etkilenmiyor.
-- [x] Yeniden dene, layout yeniden deneme, güncel hatanın kaynak konumuna gitme, Problems ve XML içeriği/yol içermeyen tanılama raporu var.
-- [x] Kaynak bazlı VS Code ayarları: yön, başlangıç derinliği, imleç takibi, metadata/whitespace, gecikme ve görünür düğüm bütçesi.
-- [x] Breadcrumb, 32 seçimlik geri/ileri geçmişi ve arama bağlamı var. Görünür bütçenin dışındaki sonuç kendi dalına odaklanarak gösteriliyor.
-- [x] Inspector attribute sayısı, ad/namespace uzunluğu ve toplam metin boyutu sınırlandırılıyor; kısaltma açıklanıyor.
-- [x] Uzun/Unicode metinler, boş/hatalı XML, worker kaynak hatası, dar panel, klavye ve azaltılmış hareket kontrolleri var.
-- [x] Dört tema paletinde axe WCAG A/AA kontrolleri: kontrast, kaydırılabilir kaynak alanı ve ayırıcı ARIA bilgileri düzeltildi. Bu testler ekran okuyucu veya işletim sistemi forced-colors testi yerine geçmez.
-- [x] SOAP, Maven POM ve karma içerik/Unicode örnekleri eklendi. Şema/link değerleri ağdan yüklenmiyor.
-- [x] Yerel Git geçmişi, ürün simgesi, ekran görüntüsü, README/CHANGELOG, paket allowlist ve SHA-256 denetimi var.
-- [x] Windows/Linux/macOS × VS Code 1.96.0/stable CI matrisi tanımlı. Manuel beta workflow'u ancak matrisi geçen revizyonda paket artefact'ı üretir; yayın yapmaz.
+## Tamamlanan teknik işler
 
-## Doğrulama kanıtı
+- [x] XML semantiği, namespace, karma içerik, CDATA/yorum/PI ve UTF-16 kaynak aralıkları.
+- [x] Kaynak↔grafik seçimi, tam içerikte arama, kapalı/sayfalanmış/bütçe dışındaki sonuçların gösterilmesi.
+- [x] Açık dallar, sayfalar, odak ve tekil eşleşen seçimin güncellemelerden sonra korunması; belirsiz kimliklerde seçimin temizlenmesi.
+- [x] Worker kaynaklarının ve sekiz topoloji yerleşiminin yeniden kullanılması; aynı kaynak düğümündeki imleç hareketlerinin yeni layout başlatmaması.
+- [x] 10 MiB giriş, 50.000 düğüm/attribute, 256 derinlik, 32 MiB serileştirilmiş model ve 10 saniye işlem bütçeleri. Worker V8 old-generation limiti 256 MiB; toplam süreç RAM garantisi değildir.
+- [x] Panele özgü duraklat/yeniden dene; layout retry; Problems/hata konumu; XML ve dosya yolu içermeyen tanılama raporu.
+- [x] Kaynak bazlı ayarlar, breadcrumb ve 32 seçimlik geçmiş; toplamı sınırlandırılan inspector detayları.
+- [x] Dört tema paleti, forced-colors sistem renkleri, dar/200% eşdeğeri görünüm, klavye gezinmesi ve erişilebilirlik semantiği.
+- [x] Yavaş layout sonrasında odak dönüşü; kullanıcı Tab veya doğrudan odak taşıma ile başka yere geçtiğinde odağın çalınmaması. Hızlı dal düğmesi tıklamalarının kart çift tıklamasına yayılmaması; grafik ve otomatik kamera yerleşimi bitmeden yeniden tıklama kabul edilmemesi.
+- [x] UTF-8 BOM, UTF-16 LE/BE BOM dosyaları; salt okunur, `file:` olmayan FileSystemProvider URI'si; kaynakta doğru metin seçimi.
+- [x] Gerçek VS Code içinde beş standart dosya açılışı ve büyük dosyada açılış/arama/güncelleme ölçümü.
+- [x] Kurulan VSIX'in bağımsız test-driver ile sınanması; test hedefinin checkout değil kurulum klasöründe bulunduğunun doğrulanması. Test kimliği manifestten alındığı için publisher değişimi testi bozmaz.
+- [x] README, SUPPORT, hata bildirim formu, CHANGELOG, örnek XML'ler, simge/ekran görüntüsü, lisans bildirimleri, paket allowlist ve SHA-256.
 
-| Kontrol | Yerel sonuç |
-|---|---|
-| TypeScript | Başarılı |
-| Çekirdek testleri | 45 başarılı |
-| Playwright | 22 başarılı; CSP, klavye, dört tema, sınır/hata ve örnek dosyalar dahil |
-| Gerçek VS Code 1.96.0, macOS arm64 | Webview, graph↔source, canlı arama, ayarlar, Problems, bağımsız iptal/yeniden dene ve 48.002 düğümlü belge başarılı |
-| Güncel kararlı VS Code 1.143.1, macOS arm64 | Aynı entegrasyon paketi çalıştırıldı; sürüme ait ölçüm raporu ayrı tutulur |
-| Yerel kurulu VS Code 1.141.0 | Temel/genişletilmiş entegrasyon başarılı; büyük belge ölçümü bu sürümde ayrıca alınmadı |
-| Bağımlılıklar | npm audit: bilinen açık yok |
-| VSIX | 18 dosya / 750.743 bayt. Kimlik, tam dosya allowlist'i ve SHA-256 `docs/package-report.json` içinde; ayrı VS Code test profiline kurulum başarılı; geliştirici kaynakları, testler ve bağımlılık klasörleri dahil değil |
+## Doğrulama
 
-Performans raporları:
+- TypeScript başarılı, npm audit: 0 güvenlik açığı; 48 çekirdek testi, 29 tarayıcı senaryosu.
+- Tarayıcı senaryoları: CSP altında gerçek ELK worker; veri/kaynak senkronizasyonu, hatalı/boş/uzun Unicode XML, namespace ve güvenli metin gösterimi; arama/odak/geçmiş; gecikmeli layout ve klavye odağı; hızlı çift tıklama; dört tema ile axe WCAG A/AA; forced-colors ve 200% eşdeğeri viewport.
+- Gerçek VS Code testleri: komutlar, unsaved edit/undo, kaynak seçimi, ayarlar, Problems, tanılama, untitled, aynı belgeye ait bağımsız paneller, BOM kodlamaları, sanal salt okunur URI, 48.002 düğümlü belge ve standart profil.
+- Windows/Linux/macOS × 1.96.0/stable kaynak ve kurulu VSIX matrisi **6/6 başarılı**. [Doğrulanmış CI koşusu](https://github.com/ertanbicakci/xml-visual-viewer-vscode/actions/runs/40254307746), test edilen commit `21eb2fb3d474be6fe696bcbd8b7e31cdcb496dd4`. İşler, kullanılan kontroller, kurulu paket ölçümleri ve teslim runtime hash karşılaştırması `docs/ci-validation.json` içinde. Sonraki belge/README güncellemesi runtime kodunu değiştirmedi.
+- İlk CI hataları: macOS uzun UNIX socket yolu ve Windows'ta yüklenmiş iç frame'e sonradan CDP bağlanma. Kısa geçici profiller, dinamik loopback portu, Webview'dan önce CDP bağlantısı, kapanmış frame'leri atlayan keşif ve hata ekranı/log kaydı ile giderildi. Hiçbir platform/senaryo skip edilmedi; CSP veya site izolasyonu gevşetilmedi.
 
-- `docs/benchmark.json`: yalnızca parser/model; bütçe hesabı ve parmak izi maliyeti dahil. Yeni sonuçlar eski v0.1 parser sürelerinin yerini alır.
-- `docs/benchmark-ui.json`: yeni tarayıcı context'i ile beş ölçüm; ana thread üzerinde harness parser'ı, codec, ELK ve çizim. 48.002 düğüm / 3.593.799 bayt profili için açılış medyan 755,3 ms, p95 891,7 ms. Arama p95 317,2 ms. Ana renderer heap en yüksek 167,1 MiB; worker ve Extension Host RAM'i dahil değil.
-- `docs/extension-performance-*.json`: gerçek VS Code komutundan kullanılabilir grafiğe kadar worker/IPC dahil tek örnek. Başlangıçta VS Code ve eklenti zaten açık; tüm uygulama soğuk başlangıcı veya p95 değildir. Kaynak güncelleme 400 ms debounce'u içerir.
+## Performans kapsamı
 
-Gerçek Extension Host büyük belge ölçümleri (tek örnek; milisaniye):
+Standart profil 970.743 bayt / 5.000 model düğümü; aynı açık VS Code içinde beş yeni önizleme paneli. Ölçüm worker, IPC, layout, çizim ve iki animation frame'i içerir; VS Code açılışı ve extension activation öncedir, renderer cache'i sıcak olabilir. Beş örnekli p95 diğer donanımlar için garanti değildir.
 
-| VS Code | Açılış | Son düğüm araması | Kaynak güncelleme |
-|---|---:|---:|---:|
-| 1.96.0 | 2.129 | 316 | 2.742 |
-| 1.143.1 | 1.996 | 504 | 1.850 |
+Yerel Apple M3 Pro kurulu paket ölçümleri `docs/extension-performance-*-package.json` içinde tutulur. GitHub paylaşımlı runner ölçümleri ayrı CI kanıtıdır; farklı CPU/OS ve sanal grafik ortamlarını doğrudan aynı performans hedefiyle karşılaştırmak doğru değildir.
 
-Ölçümler Apple M3 Pro üzerinde alınmıştır. Desteklenen limitlerin altında olmak sabit yükleme süresi garantisi vermez. Düşük donanım ve farklı XML yapıları için ayrı beta ölçümü gerekir.
+Kurulu VSIX, standart profil p95 (ms; beş örnek):
 
-## Yayından önce kalanlar
+| Ortam | VS Code 1.96.0 | VS Code 1.143.1 |
+|---|---:|---:|
+| Yerel Apple M3 Pro | 678 | 632 |
+| CI Linux | 1.608 | 1.948 |
+| CI Windows | 2.148 | 1.603 |
+| CI macOS | 2.264 | 1.562 |
 
-1. **Publisher ve görünürlük:** Marketplace publisher kaydı ve benzersiz ad kontrolü bekliyor. GitHub repo ve `repository` / `homepage` / `bugs` adresleri hazır: https://github.com/ertanbicakci/xml-visual-viewer-vscode . Depo private; Marketplace görselleri için erişilebilir HTTPS barındırma veya deponun public yapılması ayrıca kararlaştırılmalı.
-2. **Uzak CI:** depo oluşturulunca altı platform/sürüm kombinasyonunu gerçekten çalıştır. Workflow tanımlanmış olması Windows/Linux başarısı anlamına gelmez.
-3. **Kullanıcı beta testi:** gerçek SOAP/konfigürasyon dosyaları, düşük/orta donanım, büyük namespace/attribute yapıları, dosya kodlamaları ve uzaktan workspace senaryoları.
-4. **Manuel erişilebilirlik:** ekran okuyucu, %200 yazı büyütme ve Windows forced-colors/işletim sistemi yüksek kontrast modu.
-5. **Performans kabulü:** standart hedef profilinde yeterli gerçek VS Code örneğiyle p95; hedef donanım, Remote SSH/Containers ve bellek ölçümü. Mevcut tek Extension Host ölçümü bu kabulü tek başına kanıtlamaz.
-6. **Yayın kararı:** beta geri bildirimlerini ele al, sürüm/lisans/görselleri gözden geçir ve doğrulanmış VSIX üzerinden yayınla. Bu görevde dışarıya yayın yapılmadı.
+Referans cihazdaki ≤2 saniye hedefi sağlandı; bazı paylaşımlı CI minimum sürüm ölçümleri bu hedefi aşıyor. Bunlar platform işlev testinin başarısını değiştirmez; tüm cihazlarda iki saniye garantisi verilmez. Ayrıntılı örnekler, CPU ve ölçüm kapsamı `docs/ci-validation.json` içinde.
 
-Publisher `local` yerel geliştirme kimliğidir. Gerçek publisher'a geçince eklenti kimliği değişir; genel sürüm kurulurken yerel beta kaldırılmalıdır. `local` publisher ile beta paket README'si, bozuk göreli Marketplace bağlantıları üretmemek için `scripts/prepare-readme.mjs` ile metin olarak hazırlanır; kaynak README ve paket içindeki ekran görüntüsü korunur. Gerçek publisher ve herkese açık görsel adresleri hazır olduğunda normal görsel/link işleme devreye girer.
+Büyük profil 3.593.799 bayt / 48.002 düğüm; tam açık grafik vaat edilmez. Kaynak güncelleme 400 ms debounce'u içerir. Bellek alanları Extension Host süreç anlık görüntüsüdür; test/VS Code altyapısı dahildir, worker/renderer tepe belleği dahil değildir.
 
-XPath, XSD/DTD doğrulama, düzenleme ve dışa aktarma bu beta kapsamında değildir; ilk sürümü yayınlamak için zorunlu eksik olarak sayılmaz.
+- `docs/extension-performance-*-package.json`: v0.2.1 kurulu VSIX ölçümleri; `docs/extension-performance-1.96.0.json` ve `docs/extension-performance-1.143.1.json` v0.2.0 tarihsel kaynak ölçümleridir. Cihaz, sürüm, örnek sayısı ve kapsam her raporda belirtilir.
+- `docs/benchmark-ui.json`: ayrı tarayıcı harness'inde beş örnek; Extension Host IPC/debounce dahil değildir.
+- `docs/benchmark.json`: yalnızca parser/model. Bu üç kapsam birbirinin yerine kullanılmaz.
+- `docs/package-report.json`: son yerel paketin kimliği, dosya listesi, boyutu ve SHA-256 değeri.
+
+## Teslim paketi
+
+`xml-visual-viewer-0.2.1.vsix`: 19 dosya, 752.514 bayt. Yerel minimum/kararlı VS Code kurulum testleri başarılı. SHA-256: `293c207d3a92e9850450ee35f9cb3f21b4c375a6458a49d2db81ae72ae587ffe`. Tam liste `docs/package-report.json` içinde. Beş runtime dosyasının SHA-256 değerleri altı başarılı CI paketindeki dosyalarla birebir eşleşiyor; son README metni değişikliği çalıştırılan kodu değiştirmedi.
+
+## Gerçekten dışarıda kalanlar
+
+1. **Publisher:** Microsoft Marketplace publisher hesabı/ID'si ve sunucunun son ad uygunluğu kontrolü. Kimlik oluşturulmadan `local` değiştirilmez; GitHub hesabı Marketplace kimliği yerine geçmez.
+2. **Görünürlük tercihi:** repo için public kararı kullanıcıya soruldu; yanıt olmadan kaynak kodu açılmaz. Private repo ile metin tabanlı paket çalışır. Genel dağıtımda public görseller ve destek bağlantıları için görünürlük veya ayrı barındırma tercihi gerekir.
+3. **İnsan/cihaz kabulü:** gerçek kullanıcı beta geri bildirimi, gerçek VoiceOver/NVDA dinleme testi, OS yüksek kontrast ve gerçek Remote SSH/Container bağlantısı. Otomatik forced-colors/ARIA/sanal URI testleri bunların yapıldığı anlamına gelmez. Tekrarlanabilir kontrol listesi `docs/manual-acceptance.md` içindedir.
+4. **Yayın kararı:** kullanıcı doğrulanmış paketi değerlendirdikten sonra Marketplace'e yükleme. Bu çalışmada Marketplace yayını yapılmadı.
+
+XPath, şema doğrulama, düzenleme, dışa aktarma ve incremental parser onaylanan ilk sürümün dışında; eksik implementasyon olarak gösterilmez. Publisher değiştiğinde eklenti ID'si değişeceği için genel sürümü kurarken yerel beta kaldırılmalıdır.

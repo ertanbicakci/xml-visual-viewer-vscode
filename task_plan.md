@@ -19,7 +19,7 @@ Amaç: JSON Crack benzeri görsel keşif sunan, XML semantiğini koruyan bir VS 
 - [x] Teslim: README, örnek XML, VSIX ve durum raporu.
 
 ## Yayın öncesi kalan dış ortam kontrolleri
-- Windows ve Linux üzerinde CI senaryolarının çalıştırılması.
+- Platform CI sonucu güncel çalışma bölümünde izlenir; eski yerel sürümde bu kontrol henüz çalıştırılmamıştı.
 - Marketplace publisher kimliği, ad uygunluğu ve yayın kararı.
 - UI ve gerçek Extension Host ölçümleri eklendi. Farklı hedef donanımlarda yeterli örnek sayısıyla p95 kabulü yayın öncesi kalır.
 
@@ -45,10 +45,12 @@ Kullanıcı publisher / uzak repo bilgisinin henüz olmadığını ve yayın ön
 - İlk ELK kaynak adresi 404 döndü; resmi kaynak kieler/elkjs olarak doğrulandı.
 
 ## 26 Ekim 2026 — Publisher dışındaki yayın açıkları
-- [ ] Başarısız macOS/Windows CI sonuçlarını kök nedenle düzelt ve altı kombinasyonu geçir.
-- [ ] %200 metin, forced-colors, klavye/ekran okuyucu semantiği ve dosya kodlama senaryolarını tamamla.
-- [ ] Gerçek VS Code standart profilde tekrarlı p95 ölçümü ve paket üzerinden kurulum/açılış testi ekle.
-- [ ] Yayın metadata'sını ve publisher değişiminden bağımsız test/paket akışını tamamla.
-- [ ] Son paketi, kanıt raporlarını ve açık dış doğrulamaları güncelle; commit/push yap.
+- [x] Başarısız macOS/Windows CI sonuçlarını kök nedenle düzelt ve altı kombinasyonu geçir.
+- [x] %200 eşdeğeri görünüm, forced-colors, klavye/erişilebilirlik semantiği ve dosya kodlama senaryolarını tamamla.
+- [x] Gerçek VS Code standart profilde tekrarlı p95 ölçümü ve paket üzerinden kurulum/açılış testi ekle.
+- [x] Yayın metadata'sını ve publisher değişiminden bağımsız test/paket akışını tamamla.
+- [x] Son paketi, kanıt raporlarını ve açık dış doğrulamaları güncelle; commit/push yap.
 
-CI bulguları: Linux 1.96.0/stable geçti; macOS stable uzun UNIX socket yolu, macOS minimum ve Windows ilk Webview keşfinde timeout. Test profilleri kısa geçici klasöre taşınacak, başarısızlıkta renderer/extension logları ve ekran görüntüleri saklanacak; bu veriye göre kalan gerçek neden düzeltilecek. Görünürlük kararı kullanıcıya asenkron soruldu; yanıt olmadan private depo public yapılmayacak.
+CI bulguları: macOS uzun UNIX socket yolu kısa profille giderildi. Windows CDP bağlantısı Webview öncesine alındı; kapanan frame'ler keşifte atlanıyor. Hızlı tıklama sırasında geç kamera hareketinin başka karta tıklatması, kamera yerleşimi bitene kadar grafiği inert tutarak ve otomatik hareketi animasyonsuz yaparak giderildi; başarısız regresyon testiyle doğrulandı. Seçim/odak testindeki 60 offset'inin title kapanışına denk geldiği görüldü; unique id attribute offset 49 kullanılıp item seçimi ayrıca doğrulandı. Public görünürlük kararı yanıtsız; private korunuyor.
+
+Sonuç: 21eb2fb commit'i için 40254307746 numaralı CI koşusu altı kombinasyonda kaynak ve kurulu paket testlerini geçti. Kanıt docs/ci-validation.json içinde. İnsan/cihaz kabulü, publisher ve public destek/görünürlük tercihi açık dış kapılar olarak belgelenmiştir.

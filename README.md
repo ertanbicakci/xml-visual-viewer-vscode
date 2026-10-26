@@ -118,8 +118,8 @@ See `PROJECT_PLAN.md` for the product plan and `docs/implementation.md` for impl
 
 Local macOS tests cover VS Code 1.96.0 and 1.143.1, with unit tests, browser UI/CSP tests and four theme palettes checked with axe. Automated accessibility checks cover tested states and do not replace screen-reader or OS forced-color testing. Example documents include a catalog, SOAP envelope, Maven POM and mixed Unicode content.
 
-CI defines Windows/Linux/macOS × minimum/stable VS Code. The **Package verified beta** workflow produces a VSIX artifact only after that matrix passes; it does not publish to Marketplace. `npm run package` checks the VSIX allowlist, required files and identity, and writes its SHA-256 report to `artifacts/package-report.json`.
+CI checks Windows/Linux/macOS × minimum/stable VS Code, including the installed VSIX. The **Package verified beta** workflow produces a VSIX artifact only after that matrix passes; it does not publish to Marketplace. `npm run package` checks the VSIX allowlist, required files and identity, and writes its SHA-256 report to `artifacts/package-report.json`.
 
-Before public release: register the publisher, decide repository/public asset visibility, verify the extension name, run the remote matrix, test on representative machines and collect beta feedback. See [release readiness](docs/release-readiness.md) for the current evidence and remaining gates. XPath, schema validation, editing and export remain outside this beta's scope.
+Before public release: register the publisher, decide repository/public asset visibility, verify the extension name, review the recorded platform results, test on representative machines and collect beta feedback. See [release readiness](docs/release-readiness.md) for the current evidence and remaining gates. XPath, schema validation, editing and export remain outside this beta's scope.
 
 See [support](SUPPORT.md) for reporting problems and [manual acceptance](docs/manual-acceptance.md) for the human/device checks that automated tests cannot establish.

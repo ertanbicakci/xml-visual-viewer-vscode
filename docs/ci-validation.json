@@ -1,0 +1,416 @@
+{
+  "recordedAt": "2026-10-26T01:34:23.349929+00:00",
+  "workflow": "https://github.com/ertanbicakci/xml-visual-viewer-vscode/actions/runs/40254307746",
+  "testedCommit": "21eb2fb3d474be6fe696bcbd8b7e31cdcb496dd4",
+  "conclusion": "success",
+  "scope": "Windows/Linux/macOS × VS Code 1.96.0 and stable. Each job includes TypeScript, 48 core tests, 29 browser tests, source Extension Host integration and independently installed VSIX integration. Performance is measured, not enforced as a universal time limit.",
+  "postValidationChanges": "Delivery documentation and packaged README wording only; runtime hashes below match all six CI packages. Publisher remains local; no Marketplace publication.",
+  "localPackage": {
+    "file": "xml-visual-viewer-0.2.1.vsix",
+    "version": "0.2.1",
+    "publisher": "local",
+    "bytes": 752514,
+    "sha256": "293c207d3a92e9850450ee35f9cb3f21b4c375a6458a49d2db81ae72ae587ffe",
+    "files": [
+      "[Content_Types].xml",
+      "extension.vsixmanifest",
+      "extension/LICENSE.txt",
+      "extension/SUPPORT.md",
+      "extension/THIRD_PARTY_NOTICES.txt",
+      "extension/assets/icon.png",
+      "extension/changelog.md",
+      "extension/dist/extension.cjs",
+      "extension/dist/parse-worker.cjs",
+      "extension/dist/webview/app.css",
+      "extension/dist/webview/app.js",
+      "extension/dist/webview/layout-worker.js",
+      "extension/docs/images/preview.png",
+      "extension/examples/catalog.xml",
+      "extension/examples/mixed-content.xml",
+      "extension/examples/pom.xml",
+      "extension/examples/soap.xml",
+      "extension/package.json",
+      "extension/readme.md"
+    ],
+    "scope": "Package structure and identity verified locally. Does not establish Marketplace registration or cross-platform runtime compatibility."
+  },
+  "runtimeSha256": {
+    "extension/dist/extension.cjs": "0a70a17185e10309401de5b9004573178192fe7c983c099b8f7ec7fffa2c5599",
+    "extension/dist/parse-worker.cjs": "b6e1866a6ee35684ae088c3231f6476ad98e791a9902a85beab6e24798c724b9",
+    "extension/dist/webview/app.css": "6f3c65f598fd4cde3bf8ccd342d047891766d0795ac6e969693d0a9edb8a9a09",
+    "extension/dist/webview/app.js": "5a7a065d4337bb61e43160e0c9802bf5a4b0fee89791a680463e53b287068af6",
+    "extension/dist/webview/layout-worker.js": "e4f5c51c6f2fd564bb64e52e81c4a85a316ef2f24f8b90e1db5eb886c765b030"
+  },
+  "ciPackageComparison": [
+    {
+      "artifact": "xml-viewer-Linux-1.96.0",
+      "runtimeMatchesDelivery": true
+    },
+    {
+      "artifact": "xml-viewer-Linux-stable",
+      "runtimeMatchesDelivery": true
+    },
+    {
+      "artifact": "xml-viewer-Windows-1.96.0",
+      "runtimeMatchesDelivery": true
+    },
+    {
+      "artifact": "xml-viewer-Windows-stable",
+      "runtimeMatchesDelivery": true
+    },
+    {
+      "artifact": "xml-viewer-macOS-1.96.0",
+      "runtimeMatchesDelivery": true
+    },
+    {
+      "artifact": "xml-viewer-macOS-stable",
+      "runtimeMatchesDelivery": true
+    }
+  ],
+  "jobs": [
+    {
+      "name": "validate (windows-latest, 1.96.0)",
+      "conclusion": "success",
+      "url": "https://github.com/ertanbicakci/xml-visual-viewer-vscode/actions/runs/40254307746/job/121352747550",
+      "startedAt": "2026-10-26T01:27:31Z",
+      "completedAt": "2026-10-26T01:33:45Z",
+      "checks": [
+        "Run npm run check",
+        "Run npm test",
+        "Run npm run test:e2e",
+        "Extension Host (macOS / Windows)",
+        "Installed VSIX (macOS / Windows)"
+      ]
+    },
+    {
+      "name": "validate (ubuntu-latest, 1.96.0)",
+      "conclusion": "success",
+      "url": "https://github.com/ertanbicakci/xml-visual-viewer-vscode/actions/runs/40254307746/job/121352747731",
+      "startedAt": "2026-10-26T01:27:31Z",
+      "completedAt": "2026-10-26T01:33:18Z",
+      "checks": [
+        "Run npm run check",
+        "Run npm test",
+        "Run npm run test:e2e",
+        "Extension Host (Linux)",
+        "Installed VSIX (Linux)"
+      ]
+    },
+    {
+      "name": "validate (macos-latest, stable)",
+      "conclusion": "success",
+      "url": "https://github.com/ertanbicakci/xml-visual-viewer-vscode/actions/runs/40254307746/job/121352747765",
+      "startedAt": "2026-10-26T01:27:31Z",
+      "completedAt": "2026-10-26T01:30:43Z",
+      "checks": [
+        "Run npm run check",
+        "Run npm test",
+        "Run npm run test:e2e",
+        "Extension Host (macOS / Windows)",
+        "Installed VSIX (macOS / Windows)"
+      ]
+    },
+    {
+      "name": "validate (ubuntu-latest, stable)",
+      "conclusion": "success",
+      "url": "https://github.com/ertanbicakci/xml-visual-viewer-vscode/actions/runs/40254307746/job/121352747774",
+      "startedAt": "2026-10-26T01:27:31Z",
+      "completedAt": "2026-10-26T01:30:53Z",
+      "checks": [
+        "Run npm run check",
+        "Run npm test",
+        "Run npm run test:e2e",
+        "Extension Host (Linux)",
+        "Installed VSIX (Linux)"
+      ]
+    },
+    {
+      "name": "validate (windows-latest, stable)",
+      "conclusion": "success",
+      "url": "https://github.com/ertanbicakci/xml-visual-viewer-vscode/actions/runs/40254307746/job/121352747775",
+      "startedAt": "2026-10-26T01:27:31Z",
+      "completedAt": "2026-10-26T01:32:35Z",
+      "checks": [
+        "Run npm run check",
+        "Run npm test",
+        "Run npm run test:e2e",
+        "Extension Host (macOS / Windows)",
+        "Installed VSIX (macOS / Windows)"
+      ]
+    },
+    {
+      "name": "validate (macos-latest, 1.96.0)",
+      "conclusion": "success",
+      "url": "https://github.com/ertanbicakci/xml-visual-viewer-vscode/actions/runs/40254307746/job/121352747784",
+      "startedAt": "2026-10-26T01:27:31Z",
+      "completedAt": "2026-10-26T01:30:58Z",
+      "checks": [
+        "Run npm run check",
+        "Run npm test",
+        "Run npm run test:e2e",
+        "Extension Host (macOS / Windows)",
+        "Installed VSIX (macOS / Windows)"
+      ]
+    }
+  ],
+  "installedPackagePerformance": [
+    {
+      "artifact": "xml-viewer-Linux-1.96.0",
+      "measuredAt": "2026-10-26T01:32:46.860Z",
+      "vscode": "1.96.0",
+      "os": "linux x64",
+      "cpu": "AMD EPYC 9V45 96-Core Processor",
+      "samples": 1,
+      "openingMs": 1042,
+      "scope": "Actual VS Code command invocation to interactive graph and two animation frames. Includes parser worker, IPC, Webview setup, ELK and rendering. Extension activation and VS Code startup precede measurement. Source update includes configured 400ms debounce. One sample per document, not p95.",
+      "large": {
+        "bytes": 3593799,
+        "nodes": 48002,
+        "openingMs": 3694,
+        "searchMs": 516,
+        "updateMs": 3400
+      },
+      "standard": {
+        "bytes": 970743,
+        "nodes": 5000,
+        "samples": 5,
+        "timingsMs": [
+          1608,
+          1495,
+          1445,
+          1157,
+          1524
+        ],
+        "medianMs": 1495,
+        "p95Ms": 1608,
+        "scope": "Five fresh preview panels in the same VS Code workbench. Includes parse worker/IPC/layout and two animation frames; excludes VS Code/extension activation. Renderer caches may be warm. Indicative p95, not a guarantee for other hardware."
+      },
+      "compatibleDocuments": [
+        "utf16-le.xml",
+        "utf16-be.xml",
+        "utf8-bom.xml",
+        "readonly virtual URI"
+      ],
+      "extensionHostMemory": {
+        "heapUsedMiB": 165.4,
+        "rssMiB": 329,
+        "scope": "Extension Host process snapshot after tests; includes VS Code/test infrastructure, excludes peak parser-worker and renderer memory."
+      }
+    },
+    {
+      "artifact": "xml-viewer-Linux-stable",
+      "measuredAt": "2026-10-26T01:30:17.175Z",
+      "vscode": "1.143.1",
+      "os": "linux x64",
+      "cpu": "AMD EPYC 7763 64-Core Processor",
+      "samples": 1,
+      "openingMs": 1728,
+      "scope": "Actual VS Code command invocation to interactive graph and two animation frames. Includes parser worker, IPC, Webview setup, ELK and rendering. Extension activation and VS Code startup precede measurement. Source update includes configured 400ms debounce. One sample per document, not p95.",
+      "large": {
+        "bytes": 3593799,
+        "nodes": 48002,
+        "openingMs": 4674,
+        "searchMs": 565,
+        "updateMs": 4467
+      },
+      "standard": {
+        "bytes": 970743,
+        "nodes": 5000,
+        "samples": 5,
+        "timingsMs": [
+          1948,
+          1706,
+          1888,
+          1743,
+          1732
+        ],
+        "medianMs": 1743,
+        "p95Ms": 1948,
+        "scope": "Five fresh preview panels in the same VS Code workbench. Includes parse worker/IPC/layout and two animation frames; excludes VS Code/extension activation. Renderer caches may be warm. Indicative p95, not a guarantee for other hardware."
+      },
+      "compatibleDocuments": [
+        "utf16-le.xml",
+        "utf16-be.xml",
+        "utf8-bom.xml",
+        "readonly virtual URI"
+      ],
+      "extensionHostMemory": {
+        "heapUsedMiB": 105.2,
+        "rssMiB": 333.5,
+        "scope": "Extension Host process snapshot after tests; includes VS Code/test infrastructure, excludes peak parser-worker and renderer memory."
+      }
+    },
+    {
+      "artifact": "xml-viewer-Windows-1.96.0",
+      "measuredAt": "2026-10-26T01:33:06.399Z",
+      "vscode": "1.96.0",
+      "os": "win32 x64",
+      "cpu": "AMD EPYC 9V74 80-Core Processor                ",
+      "samples": 1,
+      "openingMs": 1117,
+      "scope": "Actual VS Code command invocation to interactive graph and two animation frames. Includes parser worker, IPC, Webview setup, ELK and rendering. Extension activation and VS Code startup precede measurement. Source update includes configured 400ms debounce. One sample per document, not p95.",
+      "large": {
+        "bytes": 3593799,
+        "nodes": 48002,
+        "openingMs": 5146,
+        "searchMs": 562,
+        "updateMs": 5016
+      },
+      "standard": {
+        "bytes": 970743,
+        "nodes": 5000,
+        "samples": 5,
+        "timingsMs": [
+          1761,
+          2148,
+          1784,
+          1837,
+          1852
+        ],
+        "medianMs": 1837,
+        "p95Ms": 2148,
+        "scope": "Five fresh preview panels in the same VS Code workbench. Includes parse worker/IPC/layout and two animation frames; excludes VS Code/extension activation. Renderer caches may be warm. Indicative p95, not a guarantee for other hardware."
+      },
+      "compatibleDocuments": [
+        "utf16-le.xml",
+        "utf16-be.xml",
+        "utf8-bom.xml",
+        "readonly virtual URI"
+      ],
+      "extensionHostMemory": {
+        "heapUsedMiB": 103.7,
+        "rssMiB": 193.2,
+        "scope": "Extension Host process snapshot after tests; includes VS Code/test infrastructure, excludes peak parser-worker and renderer memory."
+      }
+    },
+    {
+      "artifact": "xml-viewer-Windows-stable",
+      "measuredAt": "2026-10-26T01:31:59.772Z",
+      "vscode": "1.143.1",
+      "os": "win32 x64",
+      "cpu": "AMD EPYC 9V45 96-Core Processor                ",
+      "samples": 1,
+      "openingMs": 1198,
+      "scope": "Actual VS Code command invocation to interactive graph and two animation frames. Includes parser worker, IPC, Webview setup, ELK and rendering. Extension activation and VS Code startup precede measurement. Source update includes configured 400ms debounce. One sample per document, not p95.",
+      "large": {
+        "bytes": 3593799,
+        "nodes": 48002,
+        "openingMs": 4567,
+        "searchMs": 469,
+        "updateMs": 3296
+      },
+      "standard": {
+        "bytes": 970743,
+        "nodes": 5000,
+        "samples": 5,
+        "timingsMs": [
+          1603,
+          1538,
+          1506,
+          1322,
+          1571
+        ],
+        "medianMs": 1538,
+        "p95Ms": 1603,
+        "scope": "Five fresh preview panels in the same VS Code workbench. Includes parse worker/IPC/layout and two animation frames; excludes VS Code/extension activation. Renderer caches may be warm. Indicative p95, not a guarantee for other hardware."
+      },
+      "compatibleDocuments": [
+        "utf16-le.xml",
+        "utf16-be.xml",
+        "utf8-bom.xml",
+        "readonly virtual URI"
+      ],
+      "extensionHostMemory": {
+        "heapUsedMiB": 276,
+        "rssMiB": 525.6,
+        "scope": "Extension Host process snapshot after tests; includes VS Code/test infrastructure, excludes peak parser-worker and renderer memory."
+      }
+    },
+    {
+      "artifact": "xml-viewer-macOS-1.96.0",
+      "measuredAt": "2026-10-26T01:30:03.988Z",
+      "vscode": "1.96.0",
+      "os": "darwin arm64",
+      "cpu": "Apple M1 (Virtual)",
+      "samples": 1,
+      "openingMs": 2164,
+      "scope": "Actual VS Code command invocation to interactive graph and two animation frames. Includes parser worker, IPC, Webview setup, ELK and rendering. Extension activation and VS Code startup precede measurement. Source update includes configured 400ms debounce. One sample per document, not p95.",
+      "large": {
+        "bytes": 3593799,
+        "nodes": 48002,
+        "openingMs": 7616,
+        "searchMs": 1232,
+        "updateMs": 9567
+      },
+      "standard": {
+        "bytes": 970743,
+        "nodes": 5000,
+        "samples": 5,
+        "timingsMs": [
+          2177,
+          2264,
+          2046,
+          1989,
+          1982
+        ],
+        "medianMs": 2046,
+        "p95Ms": 2264,
+        "scope": "Five fresh preview panels in the same VS Code workbench. Includes parse worker/IPC/layout and two animation frames; excludes VS Code/extension activation. Renderer caches may be warm. Indicative p95, not a guarantee for other hardware."
+      },
+      "compatibleDocuments": [
+        "utf16-le.xml",
+        "utf16-be.xml",
+        "utf8-bom.xml",
+        "readonly virtual URI"
+      ],
+      "extensionHostMemory": {
+        "heapUsedMiB": 75.9,
+        "rssMiB": 317.2,
+        "scope": "Extension Host process snapshot after tests; includes VS Code/test infrastructure, excludes peak parser-worker and renderer memory."
+      }
+    },
+    {
+      "artifact": "xml-viewer-macOS-stable",
+      "measuredAt": "2026-10-26T01:30:00.734Z",
+      "vscode": "1.143.1",
+      "os": "darwin arm64",
+      "cpu": "Apple M1 (Virtual)",
+      "samples": 1,
+      "openingMs": 2255,
+      "scope": "Actual VS Code command invocation to interactive graph and two animation frames. Includes parser worker, IPC, Webview setup, ELK and rendering. Extension activation and VS Code startup precede measurement. Source update includes configured 400ms debounce. One sample per document, not p95.",
+      "large": {
+        "bytes": 3593799,
+        "nodes": 48002,
+        "openingMs": 4093,
+        "searchMs": 1700,
+        "updateMs": 3865
+      },
+      "standard": {
+        "bytes": 970743,
+        "nodes": 5000,
+        "samples": 5,
+        "timingsMs": [
+          1562,
+          1344,
+          1354,
+          1513,
+          1558
+        ],
+        "medianMs": 1513,
+        "p95Ms": 1562,
+        "scope": "Five fresh preview panels in the same VS Code workbench. Includes parse worker/IPC/layout and two animation frames; excludes VS Code/extension activation. Renderer caches may be warm. Indicative p95, not a guarantee for other hardware."
+      },
+      "compatibleDocuments": [
+        "utf16-le.xml",
+        "utf16-be.xml",
+        "utf8-bom.xml",
+        "readonly virtual URI"
+      ],
+      "extensionHostMemory": {
+        "heapUsedMiB": 103,
+        "rssMiB": 305.9,
+        "scope": "Extension Host process snapshot after tests; includes VS Code/test infrastructure, excludes peak parser-worker and renderer memory."
+      }
+    }
+  ]
+}

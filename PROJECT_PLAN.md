@@ -1,7 +1,7 @@
 # XML Viewer — VS Code eklentisi geliştirme planı
 
 Tarih: 25 Ekim 2026  
-Durum: Kullanıcının onayıyla salt okunur v0.1.0 yerel sürümü geliştirildi. Çekirdek, tarayıcı ve gerçek VS Code testleri macOS üzerinde doğrulandı. Windows/Linux CI yapılandırıldı; bu ortamda çalıştırılmadı. Uygulama ve doğrulama ayrıntıları: docs/implementation.md.  
+Durum: Salt okunur v0.2.1 yayın adayı geliştirildi. Güncel doğrulama ve açık yayın kapıları docs/release-readiness.md içinde; aşağıdaki plan ilk kapsamı ve sonraki ürünleştirmeyi kaydeder.
 Çalışma adı: XML Viewer. Marketplace adı ve kullanılabilirliği yayın hazırlığında kontrol edilecek.
 
 ## 1. Amaç ve ürün odağı
@@ -188,27 +188,27 @@ Bağımlılık sırası: 1 → 2 → 3 → 4 → 5 → 6. İlk kullanıcıya gö
 
 ### Kullanıcı kabul listesi
 
-- [ ] `.xml` dosyası tek komutla kaynağın yanında görselleşir; metin editörü varsayılan kalır.
-- [ ] Görselleştirici hiçbir belgeyi değiştirmez veya dirty hale getirmez.
-- [ ] Çocuk sırası ve karma içerik tüm örneklerde korunur.
-- [ ] Grafikten kaynağa geçiş tekrar eden isimler, CRLF ve emoji içeren belgelerde doğru aralığı seçer.
-- [ ] Kaynak imleci ilgili graf düğümünü vurgular; odak kaybına yol açmaz.
-- [ ] Hızlı ardışık değişikliklerde eski parse/layout sonucu son görünümü geri alamaz.
-- [ ] Parse hatası görünür; eski grafikte güncelmiş gibi kaynak gezintisi yapılamaz.
-- [ ] Kapalı veya sayfalanmış dallardaki arama sonuçlarına ulaşılır.
-- [ ] En az iki dosya ve aynı dosyaya ait iki görünüm bağımsız görünüm durumlarıyla çalışır.
-- [ ] Büyük dosya bütçeleri, iptal, worker sonlandırma ve panel kapatma doğrulanır.
-- [ ] Paket ağ bağlantısı olmadan çalışır; XML'deki HTML/URL içerikleri yürütülmez veya otomatik yüklenmez.
-- [ ] Açık/koyu/yüksek kontrast tema ve klavye gezinmesi kontrol edilir.
-- [ ] VSIX temiz VS Code profiline kurulur; Windows, macOS ve Linux üzerinde temel akış doğrulanır.
+- [x] `.xml` dosyası tek komutla kaynağın yanında görselleşir; metin editörü varsayılan kalır.
+- [x] Görselleştirici hiçbir belgeyi değiştirmez veya dirty hale getirmez.
+- [x] Çocuk sırası ve karma içerik tüm örneklerde korunur.
+- [x] Grafikten kaynağa geçiş tekrar eden isimler, CRLF ve emoji içeren belgelerde doğru aralığı seçer.
+- [x] Kaynak imleci ilgili graf düğümünü vurgular; odak kaybına yol açmaz.
+- [x] Hızlı ardışık değişikliklerde eski parse/layout sonucu son görünümü geri alamaz.
+- [x] Parse hatası görünür; eski grafikte güncelmiş gibi kaynak gezintisi yapılamaz.
+- [x] Kapalı veya sayfalanmış dallardaki arama sonuçlarına ulaşılır.
+- [x] En az iki dosya ve aynı dosyaya ait iki görünüm bağımsız görünüm durumlarıyla çalışır.
+- [x] Büyük dosya bütçeleri, iptal, worker sonlandırma ve panel kapatma doğrulanır.
+- [x] Paket ağ bağlantısı olmadan çalışır; XML'deki HTML/URL içerikleri yürütülmez veya otomatik yüklenmez.
+- [x] Açık/koyu/yüksek kontrast tema ve klavye gezinmesi kontrol edilir.
+- [x] VSIX temiz VS Code profiline kurulur; Windows, macOS ve Linux üzerinde temel akış doğrulanır.
 
-Çekirdek ve kaynak eşlemesi için 30 test; grafik etkileşimleri için 8 tarayıcı testi; komutlar, TextDocument olayları, Webview ve kaynak seçimi için gerçek VS Code Extension Host senaryosu eklendi. macOS doğrulaması tamamlandı. Ayrıntılar: docs/implementation.md.
+48 çekirdek testi, 29 tarayıcı senaryosu ve kaynak/kurulu VSIX için gerçek VS Code testleri mevcut. Teknik kapsam, ölçümler ve platform sonuçlarının kanıtı docs/release-readiness.md içinde tutulur.
 
 ## 10. Yayın sonrası sıralama
 
-1. v0.2: seçili alt ağacı SVG/PNG dışa aktarma ve namespace-aware XPath sorguları.
-2. v0.3: daha büyük dosyalar için incremental işleme, yerel outline görünümü ve kullanım verisine göre performans iyileştirme.
-3. v0.4: XSD doğrulaması ve yapısal XML karşılaştırma; ayrı teknik keşif gerektirir.
+1. İsteğe bağlı sonraki kapsam: seçili alt ağacı SVG/PNG dışa aktarma ve namespace-aware XPath sorguları.
+2. İsteğe bağlı sonraki kapsam: daha büyük dosyalar için incremental işleme, yerel outline görünümü ve kullanım verisine göre performans iyileştirme.
+3. İsteğe bağlı sonraki kapsam: XSD doğrulaması ve yapısal XML karşılaştırma; ayrı teknik keşif gerektirir.
 4. Görsel düzenleme: Kullanıcı talebi doğrulanırsa ayrı ürün aşaması. Kaynak yazımı, undo/redo ve belge koruma kuralları yeniden tasarlanır.
 
-İlk geliştirme adımı, konum eşlemesini ve worker paketlemesini doğrulayan sınırlı teknik prototiptir. İlk sürüm kapsamı yalnızca görsel incelemedir.
+Bu maddeler onaylanmış ilk sürümün dışında kalan ürün seçenekleridir; uygulanmış v0.2.1 için eksik kabul edilmez. İlk sürüm kapsamı yalnızca görsel incelemedir.

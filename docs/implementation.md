@@ -46,4 +46,14 @@ Güncel kanıt ve açık yayın kapıları `docs/release-readiness.md` içinde t
 - Her panelin aboneliği ayrı duraklatılır. Shared controller diğer aktif panelleri günceller; son aktif panel durursa worker sonlanır.
 - Resource settings, Problems, içeriksiz log/rapor, hata konumu, breadcrumb/geçmiş ve tam değerlerde arama bağlamı.
 - 45 çekirdek ve 22 browser senaryosu; minimum/kararlı VS Code ve gerçek büyük belge testi. Paket içeriği ve kimliği Node ZIP directory denetimiyle doğrulanır.
-- Uzak repo olmadığında paket README'sindeki görsel/göreli linkler metne dönüştürülür; sahte bir repo URL'si kullanılmaz. Repo bilgisi eklendiğinde vsce standart link dönüşümünü yapar.
+- Paket README'si varsayılan olarak kendine yeterli metne dönüştürülür. Public depo erişimi ayrıca doğrulanınca `--public-repository` seçeneğiyle vsce standart link dönüşümüne izin verilir; publisher adının değişmesi bunu otomatik değiştirmez.
+
+## v0.2.1 yayın adayı
+
+- 48 çekirdek testi ve 29 tarayıcı senaryosu. Gecikmiş layout/viewport sırasında etkileşimi kapatan, inspector kapanınca odağı döndüren ve kullanıcı Tab veya doğrudan odak taşıma ile ayrılınca odağı çalmayan regresyonlar eklendi.
+- Otomatik kamera yerleşimi animasyonsuz tamamlanır; node konumları ve kamera aynı duruma gelmeden grafik tıklanamaz. Dal düğmesinin çift tıklaması karta yayılmaz.
+- Forced-colors sistem renkleri, 200% eşdeğeri viewport; gerçek UTF-8 BOM/UTF-16 LE/BE ve salt okunur sanal URI kaynak eşlemesi.
+- Kısa geçici profiller, benzersiz loopback CDP portu, Webview oluşturulmadan önce CDP bağlantısı ve kapanmış frame'lere dayanıklı keşif. Hatalarda renderer/log/ekran görüntüsü saklanır.
+- VSIX bağımsız test-driver ile kurulur ve kurulum klasöründeki eklenti sınanır. Test kimliği manifestteki publisher/name üzerinden hesaplanır.
+- Gerçek VS Code içinde 970.743 bayt / 5.000 düğüm için beş yeni panel açılışı, 48.002 düğüm için açılış/arama/güncelleme raporlanır. Ölçüm kapsamı raporun içinde açıkça belirtilir.
+- Son paket, platform matrisi ve insan/cihaz kontrol listesi için docs/release-readiness.md esas alınır. Önceki sürümlerin yukarıdaki sayıları tarihsel kayıttır.

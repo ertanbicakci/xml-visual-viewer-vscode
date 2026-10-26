@@ -1,0 +1,42 @@
+{
+  "measuredAt": "2026-10-26T01:19:33.940Z",
+  "vscode": "1.96.0",
+  "os": "darwin arm64",
+  "cpu": "Apple M3 Pro",
+  "samples": 1,
+  "openingMs": 577,
+  "scope": "Actual VS Code command invocation to interactive graph and two animation frames. Includes parser worker, IPC, Webview setup, ELK and rendering. Extension activation and VS Code startup precede measurement. Source update includes configured 400ms debounce. One sample per document, not p95.",
+  "large": {
+    "bytes": 3593799,
+    "nodes": 48002,
+    "openingMs": 2258,
+    "searchMs": 322,
+    "updateMs": 2887
+  },
+  "standard": {
+    "bytes": 970743,
+    "nodes": 5000,
+    "samples": 5,
+    "timingsMs": [
+      610,
+      573,
+      572,
+      569,
+      678
+    ],
+    "medianMs": 573,
+    "p95Ms": 678,
+    "scope": "Five fresh preview panels in the same VS Code workbench. Includes parse worker/IPC/layout and two animation frames; excludes VS Code/extension activation. Renderer caches may be warm. Indicative p95, not a guarantee for other hardware."
+  },
+  "compatibleDocuments": [
+    "utf16-le.xml",
+    "utf16-be.xml",
+    "utf8-bom.xml",
+    "readonly virtual URI"
+  ],
+  "extensionHostMemory": {
+    "heapUsedMiB": 91.9,
+    "rssMiB": 181.5,
+    "scope": "Extension Host process snapshot after tests; includes VS Code/test infrastructure, excludes peak parser-worker and renderer memory."
+  }
+}

@@ -47,3 +47,12 @@ Tarih: 25 Ekim 2026.
 - VS Code focusBorder metin rengi olarak kullanıldığında koyu temada AA kontrastı sağlamadı. Metinde textLink.foreground, odak sınırında focusBorder kullanılıyor.
 - Minimum VS Code 1.96.0 gerçek Webview ve 48.002 düğümlü modelle çalıştı. Kurulu uygulama 1.141.0, indirilen güncel stable 1.143.1; raporlarda gerçek sürümler kullanılıyor.
 - Repository URL olmadan vsce göreli README görsel/linklerini reddediyor. Yerel beta için kendine yeterli metin README üretimi eklendi; repo hazır olduğunda otomatik standart link işleme kullanılacak.
+
+## 26 Ekim 2026 — son yayın adayı bulguları
+- macOS test profilini repository altında oluşturmak UNIX socket yolu sınırını aşıyordu; kısa sistem geçici klasörü ve benzersiz CDP portu kullanılıyor.
+- Windows CDP önceden yüklenmiş nested Webview frame'ini atlayabiliyordu; bağlantı Webview'dan önce açılıyor. Panel kapatılırken eski frame listesiyle yarışmak mümkün; keşif URI'ye göre tekrar deneniyor ve kopmuş frame'ler atlanıyor.
+- Kamera konumu düğmeler etkinleştikten sonra değişirse hızlı ikinci tıklama başka karta gidebiliyor. Layout ile otomatik viewport yerleşimi tek etkileşim beklemesiyle tamamlanıyor.
+- Klavye odağı geri yükleme yalnızca Tab/pointer ile değil, doğrudan focusin ile de iptal edilmeli; yardımcı teknoloji veya programlı odak hareketi korunuyor.
+- Publisher kimliği değiştirmek public görsel erişimini kanıtlamaz. Paket README'si varsayılan metin; public dönüşümü ayrı açık seçenektir. Depo public kararı gelmediği için private korunuyor.
+- Otomatik ARIA/axe/forced-colors ve sanal URI testleri gerçek ekran okuyucu, OS kontrast, Remote SSH/Container veya kullanıcı beta geri bildirimi olarak raporlanmaz.
+- Tarayıcı test harness'inde ilk sample fetch yanıtı sonradan yapılan XML update'ini ezebiliyordu. Trace, fetch'in update'ten 12 ms önce başlayıp daha sonra tamamlandığını gösterdi. Sürüm isteğin başında ayrılıyor; yeni bir update varsa eski yanıt uygulanmıyor. Bu kod VSIX'e dahil değildir.
