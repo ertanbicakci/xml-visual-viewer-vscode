@@ -11,7 +11,7 @@ const waitFor = async (condition: () => boolean) => {
     await new Promise((resolve) => setTimeout(resolve, 50));
   }
 };
-export async function run() {
+async function runSuite() {
   const extension = vscode.extensions.getExtension("local.xml-visual-viewer");
   assert.ok(extension, "Development extension must be registered");
   await extension.activate();
@@ -45,7 +45,9 @@ export async function run() {
     vscode.window.tabGroups.all.length >= 2,
     "Preview must open beside source",
   );
-  const browser = await chromium.connectOverCDP("http://127.0.0.1:9337");
+  const browser = await chromium.connectOverCDP(
+    process.env.XML_VIEWER_CDP_URL ?? "http://127.0.0.1:9337",
+  );
   const workbench = browser
     .contexts()[0]!
     .pages()
@@ -387,4 +389,50 @@ export async function run() {
   console.log(
     "XML Viewer: Extension Host integration checks passed (actual Webview rendering, graph↔source navigation, live search, settings, diagnostics, read-only, untitled, independent cancellation/retry, cleanup).",
   );
+}
+
+export async function run() {
+  try {
+    await runSuite();
+  } catch (error) {
+    const dir = process.env.XML_VIEWER_TEST_ARTIFACTS;
+    if (dir) {
+      await mkdir(dir, { recursive: true });
+      const browser = await chromium
+        .connectOverCDP(
+          process.env.XML_VIEWER_CDP_URL ?? "http://127.0.0.1:9337",
+        )
+        .catch(() => undefined);
+      if (browser) {
+        const states = [];
+        for (const [index, page] of browser
+          .contexts()
+          .flatMap((c) => c.pages())
+          .entries()) {
+          states.push({
+            url: page.url(),
+            frames: await Promise.all(
+              page.frames().map(async (frame) => ({
+                url: frame.url(),
+                text: await frame
+                  .locator("body")
+                  .innerText({ timeout: 1000 })
+                  .then((text) => text.slice(0, 20000))
+                  .catch(() => "<unavailable>"),
+              })),
+            ),
+          });
+          await page
+            .screenshot({ path: dir + `/workbench-${index}.png` })
+            .catch(() => {});
+        }
+        await writeFile(
+          dir + "/renderer.json",
+          JSON.stringify(states, null, 2),
+        );
+        await browser.close();
+      }
+    }
+    throw error;
+  }
 }

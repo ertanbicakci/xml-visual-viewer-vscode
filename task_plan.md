@@ -43,3 +43,12 @@ Kullanıcı publisher / uzak repo bilgisinin henüz olmadığını ve yayın ön
 - Dosya envanteri araması eşleşme bulamadı: klasör boş.
 - git status çalışmadı: klasör Git deposu değil. Mevcut geçmiş veya uygulanacak repo kuralları bulunmuyor.
 - İlk ELK kaynak adresi 404 döndü; resmi kaynak kieler/elkjs olarak doğrulandı.
+
+## 26 Ekim 2026 — Publisher dışındaki yayın açıkları
+- [ ] Başarısız macOS/Windows CI sonuçlarını kök nedenle düzelt ve altı kombinasyonu geçir.
+- [ ] %200 metin, forced-colors, klavye/ekran okuyucu semantiği ve dosya kodlama senaryolarını tamamla.
+- [ ] Gerçek VS Code standart profilde tekrarlı p95 ölçümü ve paket üzerinden kurulum/açılış testi ekle.
+- [ ] Yayın metadata'sını ve publisher değişiminden bağımsız test/paket akışını tamamla.
+- [ ] Son paketi, kanıt raporlarını ve açık dış doğrulamaları güncelle; commit/push yap.
+
+CI bulguları: Linux 1.96.0/stable geçti; macOS stable uzun UNIX socket yolu, macOS minimum ve Windows ilk Webview keşfinde timeout. Test profilleri kısa geçici klasöre taşınacak, başarısızlıkta renderer/extension logları ve ekran görüntüleri saklanacak; bu veriye göre kalan gerçek neden düzeltilecek. Görünürlük kararı kullanıcıya asenkron soruldu; yanıt olmadan private depo public yapılmayacak.

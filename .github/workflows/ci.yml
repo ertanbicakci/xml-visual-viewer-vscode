@@ -40,4 +40,4 @@ jobs:
           name: failure-${{ runner.os }}-${{ matrix.vscode }}
           path: |
             test-results/
-            .vscode-test/profile-*/logs/
+            artifacts/extension-host/
