@@ -353,3 +353,18 @@ test("search reveals a result beyond the visible node budget", async ({
     "row-1499",
   );
 });
+test("does not treat a branch-button double-click as a card double-click", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const expand = page.getByRole("button", {
+    name: "Expand collection",
+    exact: true,
+  });
+  await expect(expand).toBeVisible();
+  await expand.dispatchEvent("dblclick");
+  await expect(
+    page.getByRole("group", { name: "element book", exact: true }),
+  ).toHaveCount(0);
+  await expect(expand).toBeVisible();
+});

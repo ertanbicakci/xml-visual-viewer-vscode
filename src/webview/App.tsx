@@ -39,6 +39,7 @@ function Workspace({ bridge }: { bridge: Bridge }) {
   const [inspectorOpen, setInspectorOpen] = useState(true);
   const flow = useReactFlow<XmlFlowNode>();
   const graphPane = useRef<HTMLElement>(null);
+  const returnFocus = useRef(false);
   const engineRef = useRef<LayoutEngine | null>(null);
   if (!engineRef.current)
     engineRef.current = new LayoutEngine(
@@ -234,6 +235,57 @@ function Workspace({ bridge }: { bridge: Bridge }) {
       });
     if (v.selected) setInspectorOpen(true);
   }, [v.selected, flow]);
+
+  useEffect(() => {
+    if (!returnFocus.current || inspectorOpen) return;
+    let frame = 0,
+      attempts = 0;
+    const cancel = () => {
+      returnFocus.current = false;
+    };
+    const keyboard = (event: KeyboardEvent) => {
+      if (event.key === "Tab" || event.key === "Escape") cancel();
+    };
+    document.addEventListener("pointerdown", cancel, true);
+    document.addEventListener("keydown", keyboard, true);
+    const restore = () => {
+      if (!returnFocus.current) return;
+      const invalid = v.loading || Boolean(v.issue) || Boolean(layoutError);
+      if (!invalid && (layoutBusy || renderedVersion !== v.model?.version))
+        return;
+      const visible =
+        !invalid && projection?.nodes.some((node) => node.id === v.selected);
+      const target = visible
+        ? graphPane.current?.querySelector<HTMLElement>(
+            ".react-flow__node.selected",
+          )
+        : graphPane.current;
+      // React Flow commits its internal node store after the parent render.
+      if (target && !target.closest("[inert]")) target.focus();
+      if ((!target || document.activeElement !== target) && attempts++ < 60) {
+        frame = requestAnimationFrame(restore);
+        return;
+      }
+      returnFocus.current = false;
+    };
+    frame = requestAnimationFrame(restore);
+    return () => {
+      cancelAnimationFrame(frame);
+      document.removeEventListener("pointerdown", cancel, true);
+      document.removeEventListener("keydown", keyboard, true);
+    };
+  }, [
+    inspectorOpen,
+    layoutBusy,
+    layoutError,
+    renderedVersion,
+    v.model?.version,
+    v.loading,
+    v.issue,
+    v.selected,
+    projection,
+    nodes,
+  ]);
 
   const selectedNode = v.model?.nodes[v.selected ?? ""];
   const ancestors = [];
@@ -495,14 +547,8 @@ function Workspace({ bridge }: { bridge: Bridge }) {
                 )
               }
               onClose={() => {
+                returnFocus.current = true;
                 setInspectorOpen(false);
-                requestAnimationFrame(() =>
-                  (
-                    graphPane.current?.querySelector<HTMLElement>(
-                      ".react-flow__node.selected",
-                    ) ?? graphPane.current
-                  )?.focus(),
-                );
               }}
               onFocus={() => {
                 v.setFocusId(selectedNode.id);

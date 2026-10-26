@@ -72,6 +72,7 @@ export const XmlCard = memo(function XmlCard({
         {childCount > 0 && (
           <button
             className="branch-button nodrag nopan"
+            onDoubleClick={(event) => event.stopPropagation()}
             aria-label={`${expanded ? "Collapse" : "Expand"} ${label}`}
             onClick={(event) => {
               event.stopPropagation();
@@ -84,6 +85,7 @@ export const XmlCard = memo(function XmlCard({
         {expanded && childCount > shownCount && (
           <button
             className="branch-button nodrag nopan"
+            onDoubleClick={(event) => event.stopPropagation()}
             aria-label={`Show more children of ${label}`}
             onClick={(event) => {
               event.stopPropagation();

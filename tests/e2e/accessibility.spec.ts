@@ -47,6 +47,14 @@ for (const theme of palettes.themes) {
 test("returns keyboard focus to the selected graph node after closing details", async ({
   page,
 }) => {
+  await page.addInitScript(() => {
+    const Original = window.Worker;
+    window.Worker = class extends Original {
+      postMessage(message: any, ...args: any[]) {
+        setTimeout(() => super.postMessage(message, ...(args as [any])), 350);
+      }
+    };
+  });
   await page.goto("/");
   await page.getByRole("searchbox").fill("bk-101");
   await expect(page.getByTestId("node-inspector")).toContainText("bk-101");
@@ -88,4 +96,30 @@ test("keeps controls usable at a 200% equivalent viewport with forced colors", a
   await page.screenshot({
     path: testInfo.outputPath("forced-colors-200-percent.png"),
   });
+});
+test("does not steal focus if the user tabs away while layout finishes", async ({
+  page,
+}) => {
+  await page.addInitScript(() => {
+    const Original = window.Worker;
+    window.Worker = class extends Original {
+      postMessage(message: any, ...args: any[]) {
+        setTimeout(() => super.postMessage(message, ...(args as [any])), 500);
+      }
+    };
+  });
+  await page.goto("/");
+  await page.getByRole("searchbox").fill("bk-101");
+  await expect(page.getByTestId("node-inspector")).toContainText("bk-101");
+  await page.getByRole("button", { name: "Close details" }).focus();
+  await page.keyboard.press("Enter");
+  await expect(page.getByTestId("node-inspector")).toHaveCount(0);
+  await page.keyboard.press("Tab");
+  await page.evaluate(() =>
+    document.activeElement?.setAttribute("data-focus-marker", "kept"),
+  );
+  await expect(
+    page.locator(".react-flow:not([inert]) .react-flow__node.selected"),
+  ).toBeVisible();
+  await expect(page.locator('[data-focus-marker="kept"]')).toBeFocused();
 });

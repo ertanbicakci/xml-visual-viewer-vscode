@@ -175,9 +175,9 @@ export async function measureStandardOpening(workbench: Page) {
   const source =
     "<catalog>" +
     Array.from(
-      { length: 1000 },
+      { length: 1666 },
       (_, i) =>
-        `<item id="row-${i}"><name>${"XML visualization ".repeat(10)}${i}</name></item>`,
+        `<item id="row-${i}"><name>${"XML visualization ".repeat(30)}${i}</name></item>`,
     ).join("") +
     "</catalog>";
   await writeFile(uri.fsPath, source);
@@ -202,7 +202,7 @@ export async function measureStandardOpening(workbench: Page) {
   const sorted = [...timings].sort((a, b) => a - b);
   return {
     bytes: Buffer.byteLength(source),
-    nodes: 3002,
+    nodes: 5000,
     samples: timings.length,
     timingsMs: timings,
     medianMs: sorted[Math.floor(sorted.length / 2)],

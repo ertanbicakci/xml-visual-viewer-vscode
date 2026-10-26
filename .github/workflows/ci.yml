@@ -25,6 +25,14 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npm test
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+          path: |
+            ~/.cache/ms-playwright
+            ~/Library/Caches/ms-playwright
+            ~/AppData/Local/ms-playwright
       - run: npx playwright install --with-deps chromium
       - run: npm run test:e2e
       - name: Extension Host (Linux)
