@@ -45,13 +45,16 @@ test("keeps branch controls inert until automatic viewport placement settles", a
   await page.evaluate(() => {
     const original = window.requestAnimationFrame.bind(window);
     const queued: FrameRequestCallback[] = [];
+    let held = true;
     (window as any).releasePlacement = () => {
+      held = false;
       window.requestAnimationFrame = original;
       queued.forEach((callback) => original(callback));
     };
     window.requestAnimationFrame = (callback) =>
       original((time) => {
-        queued.push(callback);
+        if (held) queued.push(callback);
+        else callback(time);
       });
   });
   await expand.dispatchEvent("click");

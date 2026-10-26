@@ -33,7 +33,7 @@ jobs:
             ~/.cache/ms-playwright
             ~/Library/Caches/ms-playwright
             ~/AppData/Local/ms-playwright
-      - run: npx playwright install --with-deps chromium
+      - run: npx playwright install --with-deps --only-shell chromium
       - run: npm run test:e2e
       - name: Extension Host (Linux)
         if: runner.os == 'Linux'

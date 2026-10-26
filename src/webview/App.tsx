@@ -252,6 +252,7 @@ function Workspace({ bridge }: { bridge: Bridge }) {
       if (event.key === "Tab" || event.key === "Escape") cancel();
     };
     document.addEventListener("pointerdown", cancel, true);
+    document.addEventListener("focusin", cancel, true);
     document.addEventListener("keydown", keyboard, true);
     const restore = () => {
       if (!returnFocus.current) return;
@@ -277,6 +278,7 @@ function Workspace({ bridge }: { bridge: Bridge }) {
     return () => {
       cancelAnimationFrame(frame);
       document.removeEventListener("pointerdown", cancel, true);
+      document.removeEventListener("focusin", cancel, true);
       document.removeEventListener("keydown", keyboard, true);
     };
   }, [
