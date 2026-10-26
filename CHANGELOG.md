@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.1 — 2026-10-26 (release candidate)
+
+- Restore keyboard focus to the selected graph node when closing details.
+- Respect forced-colors system colors while retaining visible selection and edges.
+- Fix CI profile socket paths and attach to Webviews before creation for reliable Windows CDP inspection.
+- Exercise UTF-8/UTF-16 BOM files, read-only virtual URIs, repeated standard openings and the installed VSIX.
+- Derive test extension identity from the manifest so publisher registration does not require changing tests.
+- Capture integration screenshots/logs, add a support guide and a bug-report template.
+
 ## 0.2.0 — 2026-10-25 (local beta)
 
 - Reuse layout worker resources and cached positions; repeated source selections no longer rebuild the graph.

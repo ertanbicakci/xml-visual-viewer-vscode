@@ -47,6 +47,9 @@ test("preserves the inspected keyed element and focused branch after a source ed
   // Select the unique identity attribute rather than a common element name.
   await page.evaluate(() => (window as any).xmlViewerDemo.select(60));
   await page.getByRole("button", { name: "Focus branch", exact: true }).click();
+  await expect(
+    page.getByRole("button", { name: "Show full document" }),
+  ).toBeVisible();
   await page.evaluate(() =>
     (window as any).xmlViewerDemo.update(
       '<r><item id="new"/><item id="a"><title>A</title></item><item id="b"><title>Updated B</title></item></r>',

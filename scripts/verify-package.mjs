@@ -36,6 +36,7 @@ const expected = [
   "extension/readme.md",
   "extension/changelog.md",
   "extension/LICENSE.txt",
+  "extension/SUPPORT.md",
   "extension/THIRD_PARTY_NOTICES.txt",
   "extension/assets/icon.png",
   "extension/docs/images/preview.png",

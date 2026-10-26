@@ -2,7 +2,7 @@
   "name": "xml-visual-viewer",
   "displayName": "XML Viewer",
   "description": "Explore XML as an interactive graph, with namespaces, search and source navigation.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "local",
   "license": "MIT",
   "engines": {
@@ -144,7 +144,8 @@
     "notices": "node scripts/notices.mjs",
     "format": "prettier --write src tests scripts *.json *.ts .vscode",
     "benchmark:ui": "node scripts/benchmark-ui.mjs",
-    "postpackage": "node scripts/verify-package.mjs"
+    "postpackage": "node scripts/verify-package.mjs",
+    "test:package": "npm run package && node scripts/test-extension.mjs --package"
   },
   "dependencies": {
     "@rgrove/parse-xml": "^5.0.0",
@@ -181,5 +182,10 @@
   "homepage": "https://github.com/ertanbicakci/xml-visual-viewer-vscode#readme",
   "bugs": {
     "url": "https://github.com/ertanbicakci/xml-visual-viewer-vscode/issues"
-  }
+  },
+  "galleryBanner": {
+    "color": "#17232c",
+    "theme": "dark"
+  },
+  "pricing": "Free"
 }

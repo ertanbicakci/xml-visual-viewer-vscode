@@ -8,13 +8,13 @@ Repository: [ertanbicakci/xml-visual-viewer-vscode](https://github.com/ertanbica
 
 ## Try it
 
-1. Install the local `xml-visual-viewer-0.2.0.vsix` using **Extensions → … → Install from VSIX…**.
+1. Install the local `xml-visual-viewer-0.2.1.vsix` using **Extensions → … → Install from VSIX…**.
 2. Open an XML document, for example `examples/catalog.xml`.
 3. Run **XML Viewer: Open Visual Preview** from the Command Palette or the XML editor title.
 
 The preview opens beside the source. You can also right-click an XML file in Explorer, or choose **Reopen Editor With → XML Viewer**. The normal XML text editor remains the default.
 
-Requires VS Code 1.96 or newer. This is a local v0.2.0 beta package; the `local` publisher is a development identity, not a Marketplace publisher registration.
+Requires VS Code 1.96 or newer. This is a local v0.2.1 beta package; the `local` publisher is a development identity, not a Marketplace publisher registration.
 
 ## Explore a document
 
@@ -93,13 +93,14 @@ npm run check                 # TypeScript
 npm test                      # XML, graph, protocol, worker and version tests
 npx playwright install chromium
 npm run test:e2e               # Browser UI and CSP tests
-npm run test:extension         # Real VS Code + real webview and source navigation
+npm run test:extension         # Real VS Code + real webview, codecs, virtual URI and p95
+npm run test:package           # Install the generated VSIX and test that installed extension
 npm run benchmark             # Parser/model timing report in artifacts/
 npm run benchmark:ui          # Cold browser UI, search, update and renderer heap
 npm run package               # Build a self-contained VSIX
 ```
 
-`test:extension` uses an isolated profile under `.vscode-test/`. It uses an installed VS Code executable when available, or downloads a stable test build. Set `VSCODE_VERSION=1.96.0` (or `stable`) to download and test a specific version, or set `VSCODE_EXECUTABLE` to choose an executable. The explicit executable takes precedence. Actual command-to-interactive timings are written to `artifacts/extension-performance-<version>.json`. The test build exposes a loopback CDP port (9337) only while the integration test runs. On Linux, run the Extension Host tests under `xvfb-run`.
+`test:extension` creates a fresh, short temporary profile and extension folder for every run; logs are retained under `artifacts/extension-host/`. It uses an installed VS Code executable when available, or downloads a stable test build. Set `VSCODE_VERSION=1.96.0` (or `stable`) to download and test a specific version, or set `VSCODE_EXECUTABLE` to choose an executable. The explicit executable takes precedence. Actual command-to-interactive timings are written to `artifacts/extension-performance-<version>.json`. The test build chooses a free loopback CDP port for each run and exposes it only during integration testing. On Linux, run the Extension Host tests under `xvfb-run`.
 
 `npm run preview` starts a browser harness at `http://127.0.0.1:4173` after a build. It runs the same React interface with a sample document; source-navigation behavior is simulated in this harness. Demo files and integration tests are excluded from the VSIX.
 
@@ -120,3 +121,5 @@ Local macOS tests cover VS Code 1.96.0 and 1.143.1, with unit tests, browser UI/
 CI defines Windows/Linux/macOS × minimum/stable VS Code. The **Package verified beta** workflow produces a VSIX artifact only after that matrix passes; it does not publish to Marketplace. `npm run package` checks the VSIX allowlist, required files and identity, and writes its SHA-256 report to `artifacts/package-report.json`.
 
 Before public release: register the publisher, decide repository/public asset visibility, verify the extension name, run the remote matrix, test on representative machines and collect beta feedback. See [release readiness](docs/release-readiness.md) for the current evidence and remaining gates. XPath, schema validation, editing and export remain outside this beta's scope.
+
+See [support](SUPPORT.md) for reporting problems and [manual acceptance](docs/manual-acceptance.md) for the human/device checks that automated tests cannot establish.

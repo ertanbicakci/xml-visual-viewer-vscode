@@ -863,3 +863,34 @@ pre {
 .react-flow__attribution a {
   color: var(--muted);
 }
+
+@media (forced-colors: active) {
+  :root {
+    --bg: Canvas;
+    --surface: Canvas;
+    --raised: Canvas;
+    --fg: CanvasText;
+    --muted: CanvasText;
+    --border: CanvasText;
+    --accent: Highlight;
+    --accent-text: LinkText;
+    --input: Field;
+    --input-border: ButtonText;
+    --hover: Canvas;
+    --error: CanvasText;
+  }
+  button.primary {
+    background: ButtonFace;
+    color: ButtonText;
+    border-color: ButtonText;
+  }
+  .xml-card.is-selected {
+    border: 2px solid Highlight;
+  }
+  .react-flow__edge-path {
+    stroke: CanvasText;
+  }
+  .status-dot {
+    background: CanvasText;
+  }
+}

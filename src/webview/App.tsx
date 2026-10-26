@@ -38,6 +38,7 @@ function Workspace({ bridge }: { bridge: Bridge }) {
   const [renderedVersion, setRenderedVersion] = useState(-1);
   const [inspectorOpen, setInspectorOpen] = useState(true);
   const flow = useReactFlow<XmlFlowNode>();
+  const graphPane = useRef<HTMLElement>(null);
   const engineRef = useRef<LayoutEngine | null>(null);
   if (!engineRef.current)
     engineRef.current = new LayoutEngine(
@@ -367,7 +368,12 @@ function Workspace({ bridge }: { bridge: Bridge }) {
           } as React.CSSProperties
         }
       >
-        <section className="graph-pane" aria-label="XML graph">
+        <section
+          className="graph-pane"
+          aria-label="XML graph"
+          ref={graphPane}
+          tabIndex={-1}
+        >
           {v.focusId && (
             <div className="focus-banner">
               <span>Focused on {v.model?.nodes[v.focusId]?.name}</span>
@@ -488,7 +494,16 @@ function Workspace({ bridge }: { bridge: Bridge }) {
                   v.details?.node.id === selectedNode.id,
                 )
               }
-              onClose={() => setInspectorOpen(false)}
+              onClose={() => {
+                setInspectorOpen(false);
+                requestAnimationFrame(() =>
+                  (
+                    graphPane.current?.querySelector<HTMLElement>(
+                      ".react-flow__node.selected",
+                    ) ?? graphPane.current
+                  )?.focus(),
+                );
+              }}
               onFocus={() => {
                 v.setFocusId(selectedNode.id);
                 v.setExpanded(

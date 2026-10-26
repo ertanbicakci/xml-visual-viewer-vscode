@@ -1,3 +1,8 @@
+import { relative, isAbsolute } from "node:path";
+import {
+  checkDocumentCompatibility,
+  measureStandardOpening,
+} from "./compatibility";
 import { mkdir, writeFile } from "node:fs/promises";
 import { cpus, platform, arch } from "node:os";
 import * as vscode from "vscode";
@@ -12,10 +17,33 @@ const waitFor = async (condition: () => boolean) => {
   }
 };
 async function runSuite() {
-  const extension = vscode.extensions.getExtension("local.xml-visual-viewer");
+  const extension = vscode.extensions.getExtension(
+    process.env.XML_VIEWER_EXTENSION_ID ?? "local.xml-visual-viewer",
+  );
   assert.ok(extension, "Development extension must be registered");
   await extension.activate();
   assert.ok(extension.isActive, "Extension must activate");
+  if (process.env.XML_VIEWER_PACKAGE_TEST === "true") {
+    const installedPath = relative(
+      process.env.XML_VIEWER_INSTALLED_ROOT!,
+      extension.extensionUri.fsPath,
+    );
+    assert.ok(
+      installedPath &&
+        !installedPath.startsWith("..") &&
+        !isAbsolute(installedPath),
+      "Must exercise the installed VSIX, not the workspace checkout",
+    );
+  }
+  // Attach before creating Webviews: CDP misses already-loaded nested OOPIFs on Windows.
+  const browser = await chromium.connectOverCDP(
+    process.env.XML_VIEWER_CDP_URL ?? "http://127.0.0.1:9337",
+  );
+  const workbench = browser
+    .contexts()[0]!
+    .pages()
+    .find((page) => page.url().includes("workbench"))!;
+  assert.ok(workbench, "VS Code workbench renderer must be reachable");
   const sourceUri = vscode.Uri.joinPath(
     extension.extensionUri,
     "examples",
@@ -45,14 +73,6 @@ async function runSuite() {
     vscode.window.tabGroups.all.length >= 2,
     "Preview must open beside source",
   );
-  const browser = await chromium.connectOverCDP(
-    process.env.XML_VIEWER_CDP_URL ?? "http://127.0.0.1:9337",
-  );
-  const workbench = browser
-    .contexts()[0]!
-    .pages()
-    .find((page) => page.url().includes("workbench"))!;
-  assert.ok(workbench, "VS Code workbench renderer must be reachable");
   let frame = workbench.mainFrame();
   await expect
     .poll(
@@ -77,13 +97,15 @@ async function runSuite() {
       ),
   );
   const openingMs = Date.now() - openStarted;
-  await mkdir(vscode.Uri.joinPath(extension.extensionUri, "artifacts").fsPath, {
-    recursive: true,
+  await workbench.screenshot({
+    path: process.env.XML_VIEWER_TEST_ARTIFACTS + "/first-open.png",
+    timeout: 5000,
   });
+  const reportDirectory = vscode.Uri.file(process.env.XML_VIEWER_REPORT_DIR!);
+  await mkdir(reportDirectory.fsPath, { recursive: true });
   const reportPath = vscode.Uri.joinPath(
-    extension.extensionUri,
-    "artifacts",
-    `extension-performance-${vscode.version}.json`,
+    reportDirectory,
+    `extension-performance-${vscode.version}${process.env.XML_VIEWER_PACKAGE_TEST === "true" ? "-package" : ""}.json`,
   ).fsPath;
   const performanceReport = {
     measuredAt: new Date().toISOString(),
@@ -385,6 +407,27 @@ async function runSuite() {
     JSON.stringify(performanceReport, null, 2) + "\n",
   );
   await vscode.window.tabGroups.close(previews());
+  const compatibleDocuments = await checkDocumentCompatibility(workbench);
+  const standard = await measureStandardOpening(workbench);
+  const memory = process.memoryUsage();
+  await writeFile(
+    reportPath,
+    JSON.stringify(
+      {
+        ...performanceReport,
+        standard,
+        compatibleDocuments,
+        extensionHostMemory: {
+          heapUsedMiB: +(memory.heapUsed / 1048576).toFixed(1),
+          rssMiB: +(memory.rss / 1048576).toFixed(1),
+          scope:
+            "Extension Host process snapshot after tests; includes VS Code/test infrastructure, excludes peak parser-worker and renderer memory.",
+        },
+      },
+      null,
+      2,
+    ) + "\n",
+  );
   await browser.close();
   console.log(
     "XML Viewer: Extension Host integration checks passed (actual Webview rendering, graph↔source navigation, live search, settings, diagnostics, read-only, untitled, independent cancellation/retry, cleanup).",

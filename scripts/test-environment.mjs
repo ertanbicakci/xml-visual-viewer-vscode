@@ -17,6 +17,7 @@ export async function createTestEnvironment() {
       "window.newWindowDimensions": "maximized",
       "telemetry.telemetryLevel": "off",
       "update.mode": "none",
+      "git.openRepositoryInParentFolders": "never",
     }),
   );
   let port;
