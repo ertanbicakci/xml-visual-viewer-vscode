@@ -139,7 +139,7 @@
     "benchmark": "node scripts/benchmark.mjs",
     "preview": "node scripts/preview.mjs",
     "package": "vsce package --no-dependencies --readme-path artifacts/package-readme.md",
-    "vscode:prepublish": "npm run check && npm run build && npm run notices && node scripts/prepare-readme.mjs",
+    "vscode:prepublish": "npm run check && npm run build && npm run notices && node scripts/prepare-readme.mjs --public-repository",
     "pretest": "node scripts/build.mjs",
     "notices": "node scripts/notices.mjs",
     "format": "prettier --write src tests scripts *.json *.ts .vscode",

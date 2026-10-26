@@ -4,7 +4,7 @@ Explore XML inside VS Code as an interactive graph. Inspect namespaces, attribut
 
 ![XML Viewer graph and inspector](docs/images/preview.png)
 
-Repository: [ertanbicakci/xml-visual-viewer-vscode](https://github.com/ertanbicakci/xml-visual-viewer-vscode). Bug reports: [GitHub Issues](https://github.com/ertanbicakci/xml-visual-viewer-vscode/issues). The repository is currently private.
+Repository: [ertanbicakci/xml-visual-viewer-vscode](https://github.com/ertanbicakci/xml-visual-viewer-vscode). Bug reports: [GitHub Issues](https://github.com/ertanbicakci/xml-visual-viewer-vscode/issues). The repository and issue tracker are public.
 
 ## Try it
 
@@ -120,6 +120,6 @@ Local macOS tests cover VS Code 1.96.0 and 1.143.1, with unit tests, browser UI/
 
 CI checks Windows/Linux/macOS × minimum/stable VS Code, including the installed VSIX. The **Package verified beta** workflow produces a VSIX artifact only after that matrix passes; it does not publish to Marketplace. `npm run package` checks the VSIX allowlist, required files and identity, and writes its SHA-256 report to `artifacts/package-report.json`.
 
-Before public release: register the publisher, decide repository/public asset visibility, verify the extension name, review the recorded platform results, test on representative machines and collect beta feedback. See [release readiness](docs/release-readiness.md) for the current evidence and remaining gates. XPath, schema validation, editing and export remain outside this beta's scope.
+Before public release: register the publisher, verify the extension name, review the recorded platform results, test on representative machines and collect beta feedback. See [release readiness](docs/release-readiness.md) for the current evidence and remaining gates. XPath, schema validation, editing and export remain outside this beta's scope.
 
 See [support](SUPPORT.md) for reporting problems and [manual acceptance](docs/manual-acceptance.md) for the human/device checks that automated tests cannot establish.

@@ -2,7 +2,7 @@
 
 26 Ekim 2026. Kapsam: XML dosyasını değiştirmeden görsel inceleme. Marketplace yayını ve publisher kaydı bu çalışmanın dışında; publisher henüz `local` geliştirme kimliği.
 
-Depo: https://github.com/ertanbicakci/xml-visual-viewer-vscode . Kullanıcının açık bir public tercihi gelmediği için private durumu korunuyor. Paket README'si varsayılan olarak kendine yeterli metin kullanıyor; publisher adının değişmesi göreli görselleri kendiliğinden etkinleştirmiyor. Public repo erişimi doğrulanırsa `scripts/prepare-readme.mjs --public-repository` ile görseller/linkler vsce'nin normal dönüşümüne bırakılabilir.
+Depo: https://github.com/ertanbicakci/xml-visual-viewer-vscode . Kullanıcının açık onayıyla 26 Ekim 2026 tarihinde public yapıldı. README görseli ve GitHub Issues herkesçe erişilebilir. `vscode:prepublish` komutu `scripts/prepare-readme.mjs --public-repository` kullanıyor; vsce göreli görsel/linkleri public depo adreslerine dönüştürüyor. Publisher hâlâ `local`; görünürlük değişikliği Marketplace yayını değildir.
 
 ## Tamamlanan teknik işler
 
@@ -25,7 +25,7 @@ Depo: https://github.com/ertanbicakci/xml-visual-viewer-vscode . Kullanıcının
 - TypeScript başarılı, npm audit: 0 güvenlik açığı; 48 çekirdek testi, 29 tarayıcı senaryosu.
 - Tarayıcı senaryoları: CSP altında gerçek ELK worker; veri/kaynak senkronizasyonu, hatalı/boş/uzun Unicode XML, namespace ve güvenli metin gösterimi; arama/odak/geçmiş; gecikmeli layout ve klavye odağı; hızlı çift tıklama; dört tema ile axe WCAG A/AA; forced-colors ve 200% eşdeğeri viewport.
 - Gerçek VS Code testleri: komutlar, unsaved edit/undo, kaynak seçimi, ayarlar, Problems, tanılama, untitled, aynı belgeye ait bağımsız paneller, BOM kodlamaları, sanal salt okunur URI, 48.002 düğümlü belge ve standart profil.
-- Windows/Linux/macOS × 1.96.0/stable kaynak ve kurulu VSIX matrisi **6/6 başarılı**. [Doğrulanmış CI koşusu](https://github.com/ertanbicakci/xml-visual-viewer-vscode/actions/runs/40254307746), test edilen commit `21eb2fb3d474be6fe696bcbd8b7e31cdcb496dd4`. İşler, kullanılan kontroller, kurulu paket ölçümleri ve teslim runtime hash karşılaştırması `docs/ci-validation.json` içinde. Sonraki belge/README güncellemesi runtime kodunu değiştirmedi.
+- Windows/Linux/macOS × 1.96.0/stable kaynak ve kurulu VSIX matrisi **6/6 başarılı**. [Doğrulanmış CI koşusu](https://github.com/ertanbicakci/xml-visual-viewer-vscode/actions/runs/40254307746), test edilen commit `21eb2fb3d474be6fe696bcbd8b7e31cdcb496dd4`. İşler, kullanılan kontroller, kurulu paket ölçümleri ve teslim runtime hash karşılaştırması `docs/ci-validation.json` içinde. Sonraki belge/README, public paketleme seçeneği ve destek metni güncellemeleri runtime kodunu değiştirmedi.
 - İlk CI hataları: macOS uzun UNIX socket yolu ve Windows'ta yüklenmiş iç frame'e sonradan CDP bağlanma. Kısa geçici profiller, dinamik loopback portu, Webview'dan önce CDP bağlantısı, kapanmış frame'leri atlayan keşif ve hata ekranı/log kaydı ile giderildi. Hiçbir platform/senaryo skip edilmedi; CSP veya site izolasyonu gevşetilmedi.
 
 ## Performans kapsamı
@@ -54,13 +54,12 @@ Büyük profil 3.593.799 bayt / 48.002 düğüm; tam açık grafik vaat edilmez.
 
 ## Teslim paketi
 
-`xml-visual-viewer-0.2.1.vsix`: 19 dosya, 752.514 bayt. Yerel minimum/kararlı VS Code kurulum testleri başarılı. SHA-256: `293c207d3a92e9850450ee35f9cb3f21b4c375a6458a49d2db81ae72ae587ffe`. Tam liste `docs/package-report.json` içinde. Beş runtime dosyasının SHA-256 değerleri altı başarılı CI paketindeki dosyalarla birebir eşleşiyor; son README metni değişikliği çalıştırılan kodu değiştirmedi.
+`xml-visual-viewer-0.2.1.vsix`: 19 dosya, 752.493 bayt. Yerel minimum/kararlı VS Code kurulum testleri başarılı. SHA-256: `db5ad25916c7dc825ff9f95c3c4e9fab9f0409a1531051218a5e1dbdd5c1c391`. Tam liste `docs/package-report.json` içinde. Beş runtime dosyasının SHA-256 değerleri altı başarılı CI paketindeki dosyalarla birebir eşleşiyor; public README ve destek metni değişiklikleri çalıştırılan kodu değiştirmedi.
 
 ## Gerçekten dışarıda kalanlar
 
 1. **Publisher:** Microsoft Marketplace publisher hesabı/ID'si ve sunucunun son ad uygunluğu kontrolü. Kimlik oluşturulmadan `local` değiştirilmez; GitHub hesabı Marketplace kimliği yerine geçmez.
-2. **Görünürlük tercihi:** repo için public kararı kullanıcıya soruldu; yanıt olmadan kaynak kodu açılmaz. Private repo ile metin tabanlı paket çalışır. Genel dağıtımda public görseller ve destek bağlantıları için görünürlük veya ayrı barındırma tercihi gerekir.
-3. **İnsan/cihaz kabulü:** gerçek kullanıcı beta geri bildirimi, gerçek VoiceOver/NVDA dinleme testi, OS yüksek kontrast ve gerçek Remote SSH/Container bağlantısı. Otomatik forced-colors/ARIA/sanal URI testleri bunların yapıldığı anlamına gelmez. Tekrarlanabilir kontrol listesi `docs/manual-acceptance.md` içindedir.
-4. **Yayın kararı:** kullanıcı doğrulanmış paketi değerlendirdikten sonra Marketplace'e yükleme. Bu çalışmada Marketplace yayını yapılmadı.
+2. **İnsan/cihaz kabulü:** gerçek kullanıcı beta geri bildirimi, gerçek VoiceOver/NVDA dinleme testi, OS yüksek kontrast ve gerçek Remote SSH/Container bağlantısı. Otomatik forced-colors/ARIA/sanal URI testleri bunların yapıldığı anlamına gelmez. Tekrarlanabilir kontrol listesi `docs/manual-acceptance.md` içindedir.
+3. **Yayın kararı:** kullanıcı doğrulanmış paketi değerlendirdikten sonra Marketplace'e yükleme. Bu çalışmada Marketplace yayını yapılmadı.
 
 XPath, şema doğrulama, düzenleme, dışa aktarma ve incremental parser onaylanan ilk sürümün dışında; eksik implementasyon olarak gösterilmez. Publisher değiştiğinde eklenti ID'si değişeceği için genel sürümü kurarken yerel beta kaldırılmalıdır.

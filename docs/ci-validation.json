@@ -1,16 +1,16 @@
 {
-  "recordedAt": "2026-10-26T01:34:23.349929+00:00",
+  "recordedAt": "2026-10-26T09:19:12.827106+00:00",
   "workflow": "https://github.com/ertanbicakci/xml-visual-viewer-vscode/actions/runs/40254307746",
   "testedCommit": "21eb2fb3d474be6fe696bcbd8b7e31cdcb496dd4",
   "conclusion": "success",
   "scope": "Windows/Linux/macOS × VS Code 1.96.0 and stable. Each job includes TypeScript, 48 core tests, 29 browser tests, source Extension Host integration and independently installed VSIX integration. Performance is measured, not enforced as a universal time limit.",
-  "postValidationChanges": "Delivery documentation and packaged README wording only; runtime hashes below match all six CI packages. Publisher remains local; no Marketplace publication.",
+  "postValidationChanges": "Public repository visibility, public README packaging option, documentation and support wording only; runtime hashes below still match all six CI packages. Publisher remains local; no Marketplace publication.",
   "localPackage": {
     "file": "xml-visual-viewer-0.2.1.vsix",
     "version": "0.2.1",
     "publisher": "local",
-    "bytes": 752514,
-    "sha256": "293c207d3a92e9850450ee35f9cb3f21b4c375a6458a49d2db81ae72ae587ffe",
+    "bytes": 752493,
+    "sha256": "db5ad25916c7dc825ff9f95c3c4e9fab9f0409a1531051218a5e1dbdd5c1c391",
     "files": [
       "[Content_Types].xml",
       "extension.vsixmanifest",

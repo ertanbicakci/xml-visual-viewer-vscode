@@ -59,3 +59,8 @@
 - Son CI koşusu 40254307746, `21eb2fb3d474be6fe696bcbd8b7e31cdcb496dd4` için 6/6 başarılı: Windows/Linux/macOS × 1.96.0/stable. Her iş typecheck, 48 çekirdek/29 tarayıcı senaryosu, kaynak Extension Host ve bağımsız kurulu VSIX akışını içeriyor. Hiçbir platform devre dışı bırakılmadı.
 - v0.2.1 teslimi 19 dosya / 752.514 bayt. Paket allowlist/kimlik/SHA-256 doğrulandı; temiz yerel profillerde minimum/kararlı sürümlere kurularak çalıştırıldı. Güncel kanıtlar ve manuel kabul sınırları release-readiness raporuna işlendi.
 - Teslimdeki beş runtime dosyasının SHA-256 değerleri altı CI VSIX'iyle birebir eşleşti. Yerel paket raporu ve 6/6 işin kanıtı docs/ci-validation.json içinde kaydedildi. Kalan değişiklikler belge/README/kanıt dosyalarıdır; son kayıt için CI tekrar çalıştırılmadı.
+
+## Public görünürlük — açık kullanıcı onayı
+- Kullanıcı public seçeneğini onayladı; GitHub deposu public yapıldı ve API üzerinden doğrulandı.
+- README/SUPPORT metinleri güncellendi. Prepublish mevcut `--public-repository` seçeneğini kullanıyor; VSIX görsel ve göreli belge linkleri public GitHub URL'lerine dönüştü.
+- Public README ile paketleme/typecheck ve 19 dosyalık allowlist/SHA-256 kontrolü başarılı. Beş runtime dosyası önceki 6/6 başarılı CI paketleriyle birebir aynı. Yeni paket raporu güncellendi; publisher `local` olarak kaldı, Marketplace yayını yapılmadı.

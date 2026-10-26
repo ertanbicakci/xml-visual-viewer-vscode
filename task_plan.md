@@ -54,3 +54,8 @@ Kullanıcı publisher / uzak repo bilgisinin henüz olmadığını ve yayın ön
 CI bulguları: macOS uzun UNIX socket yolu kısa profille giderildi. Windows CDP bağlantısı Webview öncesine alındı; kapanan frame'ler keşifte atlanıyor. Hızlı tıklama sırasında geç kamera hareketinin başka karta tıklatması, kamera yerleşimi bitene kadar grafiği inert tutarak ve otomatik hareketi animasyonsuz yaparak giderildi; başarısız regresyon testiyle doğrulandı. Seçim/odak testindeki 60 offset'inin title kapanışına denk geldiği görüldü; unique id attribute offset 49 kullanılıp item seçimi ayrıca doğrulandı. Public görünürlük kararı yanıtsız; private korunuyor.
 
 Sonuç: 21eb2fb commit'i için 40254307746 numaralı CI koşusu altı kombinasyonda kaynak ve kurulu paket testlerini geçti. Kanıt docs/ci-validation.json içinde. İnsan/cihaz kabulü, publisher ve public destek/görünürlük tercihi açık dış kapılar olarak belgelenmiştir.
+
+## Public depo — kullanıcı onayı
+- [x] Depoyu kullanıcının açık tercihiyle public yap ve görünürlüğü doğrula.
+- [x] README, destek ve paket görsellerini public erişime göre güncelle.
+- [x] Public README ile VSIX'i tekrar paketle; linkleri ve runtime eşliğini doğrula.
