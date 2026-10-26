@@ -407,3 +407,41 @@ test("does not treat a branch-button double-click as a card double-click", async
   ).toHaveCount(0);
   await expect(expand).toBeVisible();
 });
+
+test("keeps a newer XML update when the initial sample request finishes late", async ({
+  page,
+}) => {
+  let release!: () => void;
+  let requested!: () => void;
+  const gate = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+  const sampleRequested = new Promise<void>((resolve) => {
+    requested = resolve;
+  });
+  await page.route("**/examples/catalog.xml", async (route) => {
+    requested();
+    await gate;
+    await route.fulfill({
+      contentType: "application/xml",
+      body: "<initial-sample/>",
+    });
+  });
+  await page.goto("/");
+  await sampleRequested;
+  await page.evaluate(() =>
+    (window as any).xmlViewerDemo.update("<latest-document/>"),
+  );
+  await expect(
+    page.getByRole("group", { name: "element latest-document", exact: true }),
+  ).toBeVisible();
+  release();
+  await page.evaluate(() => (window as any).xmlViewerDemo.initialLoad);
+  await expect(page.locator(".viewer")).toHaveAttribute(
+    "data-document-version",
+    "2",
+  );
+  await expect(
+    page.getByRole("group", { name: "element latest-document", exact: true }),
+  ).toBeVisible();
+});

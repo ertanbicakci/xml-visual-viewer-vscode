@@ -20,8 +20,11 @@ const listeners = new Set<(message: HostMessage) => void>();
 const emit = (message: HostMessage) =>
   listeners.forEach((listener) => listener(message));
 async function update(text?: string) {
-  source = text ?? (await fetch("/examples/catalog.xml").then((r) => r.text()));
-  version++;
+  const requestedVersion = ++version;
+  const nextSource: string =
+    text ?? (await fetch("/examples/catalog.xml").then((r) => r.text()));
+  if (requestedVersion !== version) return;
+  source = nextSource;
   if (paused) return;
   emit({ type: "loading", version });
   const parsed = parseXmlDocument(
@@ -38,7 +41,7 @@ const bridge: Bridge = {
   post(message) {
     if (message.type === "ready") {
       emit({ type: "settings", settings: DEFAULT_SETTINGS });
-      void update();
+      (window as any).xmlViewerDemo.initialLoad = update();
       return;
     }
     if (message.type === "cancel") {
