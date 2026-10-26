@@ -32,6 +32,36 @@ test("reuses the layout worker resource across branch changes and repeated sourc
   expect(requests).toBe(baseline);
   expect(requests).toBe(1);
 });
+test("keeps branch controls inert until automatic viewport placement settles", async ({
+  page,
+}) => {
+  await page.goto("/");
+  const expand = page.getByRole("button", {
+    name: "Expand collection",
+    exact: true,
+  });
+  await expect(expand).toBeVisible();
+  await expect(page.locator(".react-flow")).not.toHaveAttribute("inert", "");
+  await page.evaluate(() => {
+    const original = window.requestAnimationFrame.bind(window);
+    const queued: FrameRequestCallback[] = [];
+    (window as any).releasePlacement = () => {
+      window.requestAnimationFrame = original;
+      queued.forEach((callback) => original(callback));
+    };
+    window.requestAnimationFrame = (callback) =>
+      original((time) => {
+        queued.push(callback);
+      });
+  });
+  await expand.dispatchEvent("click");
+  await expect(
+    page.locator('.react-flow__node[aria-label="element book"]'),
+  ).toHaveCount(3);
+  await expect(page.locator(".react-flow")).toHaveAttribute("inert", "");
+  await page.evaluate(() => (window as any).releasePlacement());
+  await expect(page.locator(".react-flow")).not.toHaveAttribute("inert", "");
+});
 test("preserves the inspected keyed element and focused branch after a source edit", async ({
   page,
 }) => {
@@ -45,7 +75,12 @@ test("preserves the inspected keyed element and focused branch after a source ed
   await page.getByRole("searchbox").fill("b");
   await expect(page.getByTestId("node-inspector")).toContainText("id");
   // Select the unique identity attribute rather than a common element name.
-  await page.evaluate(() => (window as any).xmlViewerDemo.select(60));
+  await page.evaluate(() => (window as any).xmlViewerDemo.select(49));
+  await expect(
+    page
+      .getByTestId("node-inspector")
+      .getByRole("heading", { name: "item", exact: true }),
+  ).toBeVisible();
   await page.getByRole("button", { name: "Focus branch", exact: true }).click();
   await expect(
     page.getByRole("button", { name: "Show full document" }),
@@ -223,6 +258,7 @@ test("supports keyboard selection and branch controls", async ({ page }) => {
     exact: true,
   });
   await expect(collection).toBeVisible();
+  await expect(page.locator(".react-flow")).not.toHaveAttribute("inert", "");
   await collection.focus();
   await page.keyboard.press("Enter");
   await expect(page.getByTestId("node-inspector")).toContainText(

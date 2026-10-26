@@ -3,7 +3,7 @@
 ## 0.2.1 — 2026-10-26 (release candidate)
 
 - Restore keyboard focus after closing details, including slow layouts; preserve deliberate user navigation while waiting.
-- Prevent rapid branch-button clicks from also triggering card double-click expansion.
+- Prevent rapid branch-button clicks from also triggering card double-click expansion; keep controls inert until automatic camera placement settles.
 - Respect forced-colors system colors while retaining visible selection and edges.
 - Fix CI profile socket paths and attach to Webviews before creation for reliable Windows CDP inspection.
 - Exercise UTF-8/UTF-16 BOM files, read-only virtual URIs, repeated standard openings and the installed VSIX.

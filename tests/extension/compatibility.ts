@@ -17,8 +17,10 @@ export async function findViewer(
               .locator(".viewer")
               .count()
               .catch(() => 0)) &&
-            (await frame.locator(".file-name").getAttribute("title")) ===
-              uri.toString()
+            (await frame
+              .locator(".file-name")
+              .getAttribute("title")
+              .catch(() => null)) === uri.toString()
           ) {
             found = frame;
             return true;

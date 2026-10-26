@@ -121,7 +121,7 @@ Object.assign(window, {
       });
     },
     select(offset: number) {
-      void import("../core/graph").then(({ nodeAtOffset }) => {
+      return import("../core/graph").then(({ nodeAtOffset }) => {
         if (model) {
           const node = nodeAtOffset(model, offset);
           if (node) emit({ type: "selection", version, nodeId: node.id });

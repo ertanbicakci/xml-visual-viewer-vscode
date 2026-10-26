@@ -37,6 +37,7 @@ for (const theme of palettes.themes) {
       name: "element collection",
       exact: true,
     });
+    await expect(page.locator(".react-flow")).not.toHaveAttribute("inert", "");
     await node.focus();
     await page.keyboard.press("Enter");
     await expect(page.getByTestId("node-inspector")).toContainText(

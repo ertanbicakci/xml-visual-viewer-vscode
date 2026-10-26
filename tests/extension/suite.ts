@@ -1,6 +1,7 @@
 import { relative, isAbsolute } from "node:path";
 import {
   checkDocumentCompatibility,
+  findViewer,
   measureStandardOpening,
 } from "./compatibility";
 import { mkdir, writeFile } from "node:fs/promises";
@@ -73,20 +74,7 @@ async function runSuite() {
     vscode.window.tabGroups.all.length >= 2,
     "Preview must open beside source",
   );
-  let frame = workbench.mainFrame();
-  await expect
-    .poll(
-      async () => {
-        for (const candidate of workbench.frames())
-          if (await candidate.locator(".viewer").count()) {
-            frame = candidate;
-            return true;
-          }
-        return false;
-      },
-      { timeout: 15_000 },
-    )
-    .toBe(true);
+  const frame = await findViewer(workbench, sourceUri);
   await expect(
     frame.locator(".react-flow:not([inert]) .react-flow__node"),
   ).not.toHaveCount(0);
@@ -344,20 +332,7 @@ async function runSuite() {
   await vscode.window.showTextDocument(largeDoc, vscode.ViewColumn.One);
   let start = Date.now();
   await vscode.commands.executeCommand("xmlViewer.openPreview");
-  let largeFrame = workbench.mainFrame();
-  await expect
-    .poll(
-      async () => {
-        for (const candidate of workbench.frames())
-          if (await candidate.locator(".viewer").count()) {
-            largeFrame = candidate;
-            return true;
-          }
-        return false;
-      },
-      { timeout: 15000 },
-    )
-    .toBe(true);
+  const largeFrame = await findViewer(workbench, largeDoc.uri);
   await expect(
     largeFrame.locator(".react-flow:not([inert]) .react-flow__node"),
   ).not.toHaveCount(0, { timeout: 15000 });

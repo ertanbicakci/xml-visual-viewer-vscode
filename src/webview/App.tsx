@@ -18,8 +18,6 @@ import { XmlCard, type XmlFlowNode } from "./XmlCard";
 import { Inspector } from "./Inspector";
 import { Toolbar } from "./Toolbar";
 const nodeTypes = { xml: XmlCard };
-const reduceMotion = () =>
-  window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 export function App({ bridge }: { bridge: Bridge }) {
   return (
@@ -102,7 +100,7 @@ function Workspace({ bridge }: { bridge: Bridge }) {
       projection.edges,
       v.direction,
     );
-    setLayoutBusy(!engine.has(signature));
+    setLayoutBusy(true);
     setLayoutError("");
     const model = v.model;
     const next: XmlFlowNode[] = projection.nodes.map((xml) => {
@@ -149,51 +147,58 @@ function Workspace({ bridge }: { bridge: Bridge }) {
         setEdges(
           projection.edges.map((edge) => ({ ...edge, type: "smoothstep" })),
         );
-        setLayoutBusy(false);
-        requestAnimationFrame(() =>
-          requestAnimationFrame(() => {
-            if (disposed) return;
-            const intentChanged =
-              viewportIntent.current.focus !== v.focusId ||
-              viewportIntent.current.direction !== v.direction;
-            viewportIntent.current = {
-              focus: v.focusId,
-              direction: v.direction,
-            };
-            if (result.cached && !firstLayout.current && !intentChanged) return;
-            const selected = arranged.find(
-              (node) => node.id === selectedRef.current,
-            );
-            if (
-              firstLayout.current &&
-              restoredView.current.uri === model.uri &&
-              restoredView.current.viewport
-            )
-              void flow.setViewport(restoredView.current.viewport);
-            else if (v.focusId)
-              void flow.fitView({
-                padding: 0.18,
-                maxZoom: 1,
-                duration: reduceMotion() ? 0 : 180,
-              });
-            else if (selected)
-              void flow.setCenter(
-                selected.position.x + 118,
-                selected.position.y + 68,
-                {
-                  zoom: Math.max(0.7, Math.min(flow.getZoom(), 1.1)),
-                  duration: reduceMotion() ? 0 : 180,
-                },
-              );
-            else
-              void flow.fitView({
-                padding: 0.18,
-                maxZoom: 1,
-                duration: reduceMotion() ? 0 : 180,
-              });
-            firstLayout.current = false;
-          }),
+        await new Promise<void>((resolve) =>
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
         );
+        if (!disposed) {
+          const intentChanged =
+            viewportIntent.current.focus !== v.focusId ||
+            viewportIntent.current.direction !== v.direction;
+          viewportIntent.current = {
+            focus: v.focusId,
+            direction: v.direction,
+          };
+          if (result.cached && !firstLayout.current && !intentChanged) {
+            setLayoutBusy(false);
+            return;
+          }
+          const selected = arranged.find(
+            (node) => node.id === selectedRef.current,
+          );
+          if (
+            firstLayout.current &&
+            restoredView.current.uri === model.uri &&
+            restoredView.current.viewport
+          )
+            await flow.setViewport(restoredView.current.viewport);
+          else if (v.focusId)
+            await flow.fitView({
+              padding: 0.18,
+              maxZoom: 1,
+              duration: 0,
+            });
+          else if (selected)
+            await flow.setCenter(
+              selected.position.x + 118,
+              selected.position.y + 68,
+              {
+                zoom: Math.max(0.7, Math.min(flow.getZoom(), 1.1)),
+                duration: 0,
+              },
+            );
+          else
+            await flow.fitView({
+              padding: 0.18,
+              maxZoom: 1,
+              duration: 0,
+            });
+          firstLayout.current = false;
+          // Commit the final camera position before accepting another graph click.
+          await new Promise<void>((resolve) =>
+            requestAnimationFrame(() => resolve()),
+          );
+          if (!disposed) setLayoutBusy(false);
+        }
       }
     };
     void run().catch((error) => {
@@ -231,7 +236,7 @@ function Workspace({ bridge }: { bridge: Bridge }) {
     if (node)
       void flow.setCenter(node.position.x + 118, node.position.y + 68, {
         zoom: Math.max(0.7, Math.min(flow.getZoom(), 1.1)),
-        duration: reduceMotion() ? 0 : 180,
+        duration: 0,
       });
     if (v.selected) setInspectorOpen(true);
   }, [v.selected, flow]);
